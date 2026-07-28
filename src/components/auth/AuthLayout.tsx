@@ -5,22 +5,34 @@ import { ReactNode, useEffect, useState } from "react";
 
 const slides = [
   {
-    image: "/auth/slide-1.svg",
+    image: "/auth/onboarding-1.jpg",
     headline: "Log What You Learn",
     subtext:
       "Record your daily activities, lessons, and achievements as you progress through your SIWES experience.",
   },
   {
-    image: "/auth/slide-2.svg",
-    headline: "Show Your Progress",
+    image: "/auth/onboarding-2.jpg",
+    headline: "Start Your Internship Journey",
     subtext:
-      "Add photos, reports, and project files to support the work you've done.",
+      "Join thousands of students digitizing their industrial training experience from day one.",
   },
   {
-    image: "/auth/slide-3.svg",
+    image: "/auth/onboarding-3.jpg",
     headline: "Stay Organized Throughout Your Training",
     subtext:
       "Manage activities, submit reports, and collaborate with supervisors from a single platform.",
+  },
+  {
+    image: "/auth/onboarding-4.png",
+    headline: "Capture Every Milestone",
+    subtext:
+      "Snap photos of your work as proof and attach them straight to your logbook entries.",
+  },
+  {
+    image: "/auth/onboarding-5.jpg",
+    headline: "Show Your Progress",
+    subtext:
+      "Add photos, reports, and project files to support the work you've done.",
   },
 ];
 

@@ -36,7 +36,17 @@ function LoginForm() {
       password,
     });
 
-    if (signInError || !data.user) {
+    if (signInError) {
+      if (signInError.message.toLowerCase().includes("email not confirmed")) {
+        router.push(`/verify-email?email=${encodeURIComponent(email)}`);
+        return;
+      }
+      setError(signInError.message);
+      setLoading(false);
+      return;
+    }
+
+    if (!data.user) {
       setError("Invalid email or password");
       setLoading(false);
       return;
@@ -76,7 +86,7 @@ function LoginForm() {
           label="Email"
           type="email"
           icon={<MailIcon />}
-          placeholder="ex: folayaneniola1@gmail.com"
+          placeholder="ex: adewaleOluwatobi@gmail.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required

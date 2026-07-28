@@ -51,6 +51,12 @@ export default function SignupPage() {
       return;
     }
 
+    if (data.user.identities && data.user.identities.length === 0) {
+      setError("An account with this email already exists. Try logging in instead.");
+      setLoading(false);
+      return;
+    }
+
     router.push(`/verify-email?email=${encodeURIComponent(email)}`);
   }
 

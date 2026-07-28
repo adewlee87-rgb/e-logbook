@@ -1,0 +1,59 @@
+import { Suspense } from "react";
+import { createClient } from "@/lib/supabase/server";
+import { DashboardShell } from "@/components/dashboard/DashboardShell";
+import { Breadcrumb } from "@/components/dashboard/Breadcrumb";
+import { AddNewLogButton } from "@/components/dashboard/AddNewLogButton";
+import { ReportView } from "@/components/dashboard/ReportView";
+import type { ReportEntry } from "@/components/dashboard/ReportCard";
+import type { EntryStatus } from "@/components/dashboard/StatusBadge";
+
+interface EntryMediaRow {
+  file_url: string;
+  file_type: string;
+}
+
+export default async function ReportPage() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return null;
+
+  const { data: entries } = await supabase
+    .from("logbook_entries")
+    .select(
+      "id, title, date, objective, observations, status, created_at, entry_media(file_url, file_type)"
+    )
+    .eq("student_id", user.id)
+    .order("created_at", { ascending: false });
+
+  const reportEntries: ReportEntry[] = (entries ?? []).map((e) => {
+    const media = (e.entry_media ?? []) as unknown as EntryMediaRow[];
+    const image = media.find((m) => m.file_type?.startsWith("image/"));
+    return {
+      id: e.id,
+      title: e.title,
+      body: e.observations ?? e.objective ?? "",
+      date: e.date,
+      createdAt: e.created_at,
+      imageUrl: image?.file_url ?? null,
+      status: e.status as EntryStatus,
+    };
+  });
+
+  return (
+    <DashboardShell>
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <Breadcrumb current="/student/report" />
+        <AddNewLogButton />
+      </div>
+
+      <div className="mt-8">
+        <Suspense fallback={null}>
+          <ReportView entries={reportEntries} />
+        </Suspense>
+      </div>
+    </DashboardShell>
+  );
+}

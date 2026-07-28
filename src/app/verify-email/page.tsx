@@ -9,8 +9,8 @@ import { Button } from "@/components/ui/Button";
 import { OtpInput } from "@/components/ui/OtpInput";
 import { createClient } from "@/lib/supabase/client";
 
-// Supabase's default "Confirm signup" email template sends a 6-digit OTP.
-const OTP_LENGTH = 6;
+// This project's "Confirm signup" email template sends an 8-digit OTP.
+const OTP_LENGTH = 8;
 
 function VerifyEmailForm() {
   const router = useRouter();
