@@ -11,3 +11,93 @@ body {
   color: var(--foreground);
   background: var(--background);
 }
+
+/* ------------------------------------------------------------------ */
+/*  Ambient motion graphics — GPU-only (transform/opacity), no JS.     */
+/*  Every animation is disabled under prefers-reduced-motion below.    */
+/* ------------------------------------------------------------------ */
+
+/* Aurora blobs drifting behind the hero / dark sections */
+@keyframes aurora-drift {
+  0%   { transform: translate3d(0, 0, 0) scale(1); }
+  33%  { transform: translate3d(4%, -6%, 0) scale(1.15); }
+  66%  { transform: translate3d(-5%, 4%, 0) scale(0.92); }
+  100% { transform: translate3d(0, 0, 0) scale(1); }
+}
+
+/* Gentle vertical float for badges / floating cards */
+@keyframes float-y {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-10px); }
+}
+
+/* Slow spin for conic/gradient rings */
+@keyframes spin-slow {
+  to { transform: rotate(360deg); }
+}
+
+/* Shimmer sweep across a surface (skeleton / highlight) */
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* Animated conic gradient border (hue rotation via position) */
+@keyframes border-pan {
+  0%, 100% { background-position: 0% 50%; }
+  50%      { background-position: 100% 50%; }
+}
+
+/* Pulsing ring for the "live" / active indicators */
+@keyframes pulse-ring {
+  0%   { transform: scale(0.9); opacity: 0.7; }
+  70%  { transform: scale(1.8); opacity: 0; }
+  100% { transform: scale(1.8); opacity: 0; }
+}
+
+/* Dashed connector line drawing itself in */
+@keyframes dash-draw {
+  to { stroke-dashoffset: 0; }
+}
+
+.animate-aurora   { animation: aurora-drift 18s ease-in-out infinite; will-change: transform; }
+.animate-float    { animation: float-y 5s ease-in-out infinite; will-change: transform; }
+.animate-spin-slow{ animation: spin-slow 22s linear infinite; will-change: transform; }
+.animate-border-pan{ animation: border-pan 6s ease infinite; background-size: 200% 200%; }
+.animate-pulse-ring{ animation: pulse-ring 2.4s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+
+.shimmer {
+  background: linear-gradient(
+    100deg,
+    transparent 20%,
+    rgba(255, 255, 255, 0.55) 50%,
+    transparent 80%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2.4s ease-in-out infinite;
+}
+
+/* Amber-tinted grid backdrop for dark sections */
+.bg-grid {
+  background-image:
+    linear-gradient(to right, rgba(255, 193, 7, 0.08) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 193, 7, 0.08) 1px, transparent 1px);
+  background-size: 44px 44px;
+}
+
+/* Soft dotted backdrop for light sections */
+.bg-dots {
+  background-image: radial-gradient(rgba(26, 26, 26, 0.06) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
