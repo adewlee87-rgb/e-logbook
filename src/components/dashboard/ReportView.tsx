@@ -1,10 +1,13 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { ReportCard, type ReportEntry } from "@/components/dashboard/ReportCard";
-import { ArrowLeftIcon, FilterIcon, SearchIcon } from "@/components/ui/icons";
+import { LogFormModal } from "@/components/dashboard/LogFormModal";
+import { ArrowLeftIcon, EditIcon, FilterIcon, LockIcon, SearchIcon } from "@/components/ui/icons";
 import type { EntryStatus } from "@/components/dashboard/StatusBadge";
+
+const EDIT_WINDOW_MS = 5 * 60 * 60 * 1000;
 
 const STATUS_OPTIONS: { label: string; value: EntryStatus | "all" }[] = [
   { label: "All", value: "all" },
@@ -42,6 +45,15 @@ export function ReportView({ entries }: { entries: ReportEntry[] }) {
   const [query, setQuery] = useState(searchParams.get("q") ?? "");
   const [statusFilter, setStatusFilter] = useState<EntryStatus | "all">("all");
   const [filterOpen, setFilterOpen] = useState(false);
+  const [editing, setEditing] = useState<ReportEntry | null>(null);
+
+  // Resolve editability on the client only, so the server render (which has no
+  // stable "now") can't cause a hydration mismatch on the Edit / lock affordance.
+  const [now, setNow] = useState<number | null>(null);
+  useEffect(() => setNow(Date.now()), []);
+
+  const isEditable = (entry: ReportEntry) =>
+    now !== null && now < new Date(entry.createdAt).getTime() + EDIT_WINDOW_MS;
 
   const filtered = useMemo(() => {
     return entries.filter((e) => {
@@ -123,6 +135,8 @@ export function ReportView({ entries }: { entries: ReportEntry[] }) {
                   compact={!!selected}
                   onOpen={() => setSelectedId(entry.id)}
                   onDownload={() => downloadEntry(entry)}
+                  onEdit={now === null ? undefined : () => setEditing(entry)}
+                  canEdit={isEditable(entry)}
                 />
               ))}
             </div>
@@ -131,13 +145,34 @@ export function ReportView({ entries }: { entries: ReportEntry[] }) {
 
         {selected && (
           <div className="flex-1 rounded-2xl border border-[#E5E7EB] bg-white p-8">
-            <button
-              onClick={() => setSelectedId(null)}
-              className="flex items-center gap-2 text-sm font-medium text-[#1A1A1A] hover:underline"
-            >
-              <ArrowLeftIcon className="h-4 w-4" />
-              Back
-            </button>
+            <div className="flex items-center justify-between gap-4">
+              <button
+                onClick={() => setSelectedId(null)}
+                className="flex items-center gap-2 text-sm font-medium text-[#1A1A1A] hover:underline"
+              >
+                <ArrowLeftIcon className="h-4 w-4" />
+                Back
+              </button>
+
+              {now !== null &&
+                (isEditable(selected) ? (
+                  <button
+                    onClick={() => setEditing(selected)}
+                    className="inline-flex items-center gap-2 rounded-full border border-[#E5E7EB] px-5 py-2.5 text-sm font-semibold text-[#1A1A1A] hover:bg-gray-50"
+                  >
+                    <EditIcon className="h-4 w-4" />
+                    Edit
+                  </button>
+                ) : (
+                  <span
+                    title="Logs can only be edited within 5 hours of creation."
+                    className="inline-flex items-center gap-1.5 text-xs text-[#9CA3AF]"
+                  >
+                    <LockIcon className="h-3.5 w-3.5" />
+                    Editing closed
+                  </span>
+                ))}
+            </div>
 
             <h2 className="mt-6 text-2xl font-bold text-[#1A1A1A]">{selected.title}</h2>
             <p className="mt-4 whitespace-pre-wrap text-[#333]">{selected.body}</p>
@@ -153,6 +188,16 @@ export function ReportView({ entries }: { entries: ReportEntry[] }) {
           </div>
         )}
       </div>
+
+      <LogFormModal
+        key={editing?.id ?? "none"}
+        open={!!editing}
+        onClose={() => setEditing(null)}
+        mode="edit"
+        entry={
+          editing ? { id: editing.id, title: editing.title, body: editing.body } : undefined
+        }
+      />
     </div>
   );
 }

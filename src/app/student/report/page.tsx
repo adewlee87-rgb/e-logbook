@@ -28,6 +28,9 @@ export default async function ReportPage() {
     .eq("student_id", user.id)
     .order("created_at", { ascending: false });
 
+  const todayKey = new Date().toISOString().slice(0, 10);
+  const alreadyLoggedToday = (entries ?? []).some((e) => e.date === todayKey);
+
   const reportEntries: ReportEntry[] = (entries ?? []).map((e) => {
     const media = (e.entry_media ?? []) as unknown as EntryMediaRow[];
     const image = media.find((m) => m.file_type?.startsWith("image/"));
@@ -46,7 +49,7 @@ export default async function ReportPage() {
     <DashboardShell>
       <div className="flex flex-wrap items-center justify-between gap-4">
         <Breadcrumb current="/student/report" />
-        <AddNewLogButton />
+        <AddNewLogButton alreadyLoggedToday={alreadyLoggedToday} />
       </div>
 
       <div className="mt-8">

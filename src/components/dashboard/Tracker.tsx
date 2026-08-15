@@ -6,12 +6,19 @@ const MONTH_LABELS = [
 ];
 const ROW_LABELS = ["Mon", "", "Wed", "", "Fri", "", ""];
 
-type DayState = "active" | "inactive" | "upcoming";
+type DayState = "logged" | "pending" | "missed" | "upcoming";
 
 interface DayCell {
   date: Date;
   state: DayState;
 }
+
+const STATE_LABEL: Record<DayState, string> = {
+  logged: "Logged",
+  pending: "Pending",
+  missed: "Missed",
+  upcoming: "Upcoming",
+};
 
 function startOfDay(date: Date) {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate());
@@ -44,13 +51,33 @@ export function Tracker({ startDate, endDate, activeDates }: TrackerProps) {
   const gridStart = mondayOfWeek(rangeStart);
   const columns: DayCell[][] = [];
 
+  const todayKey = toKey(today);
+
+  // SIWES runs Mon–Fri. Flip this to `false` if your programme expects logs
+  // on weekends too — weekends will then count as "missed" like any other day.
+  const EXCLUDE_WEEKENDS = true;
+
   for (let col = 0; col < WEEK_COLUMNS; col++) {
     const week: DayCell[] = [];
     for (let row = 0; row < 7; row++) {
       const date = new Date(gridStart.getTime() + (col * 7 + row) * DAY_MS);
+      const dow = date.getDay(); // 0 = Sun, 6 = Sat
+      const isWeekend = dow === 0 || dow === 6;
       let state: DayState = "upcoming";
       if (date >= rangeStart && date <= rangeEnd && date <= today) {
-        state = activeSet.has(toKey(date)) ? "active" : "inactive";
+        if (activeSet.has(toKey(date))) {
+          // A log was submitted for this day.
+          state = "logged";
+        } else if (EXCLUDE_WEEKENDS && isWeekend) {
+          // Not a working day — leave it neutral rather than flag it missed.
+          state = "upcoming";
+        } else if (toKey(date) === todayKey) {
+          // It's a working day, it's today, and no log yet — still pending.
+          state = "pending";
+        } else {
+          // A past working day with no submission — missed.
+          state = "missed";
+        }
       }
       week.push({ date, state });
     }
@@ -58,8 +85,9 @@ export function Tracker({ startDate, endDate, activeDates }: TrackerProps) {
   }
 
   const stateColor: Record<DayState, string> = {
-    active: "bg-primary",
-    inactive: "bg-[#FCE9AE]",
+    logged: "bg-[#16A34A]",
+    pending: "bg-primary",
+    missed: "bg-[#DC2626]",
     upcoming: "bg-[#EEEFF1]",
   };
 
@@ -90,7 +118,7 @@ export function Tracker({ startDate, endDate, activeDates }: TrackerProps) {
               {week.map((cell, rowIndex) => (
                 <div
                   key={rowIndex}
-                  title={toKey(cell.date)}
+                  title={`${toKey(cell.date)} — ${STATE_LABEL[cell.state]}`}
                   className={`h-3 w-3 rounded-sm ${stateColor[cell.state]}`}
                 />
               ))}
@@ -101,12 +129,15 @@ export function Tracker({ startDate, endDate, activeDates }: TrackerProps) {
 
       <div className="mt-6 flex items-center justify-between">
         <p className="text-sm text-[#666]">Monitor your active status</p>
-        <div className="flex items-center gap-4 text-xs text-[#666]">
+        <div className="flex flex-wrap items-center gap-4 text-xs text-[#666]">
           <span className="flex items-center gap-1.5">
-            <span className="h-3 w-3 rounded-sm bg-primary" /> Active
+            <span className="h-3 w-3 rounded-sm bg-[#16A34A]" /> Logged
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="h-3 w-3 rounded-sm bg-[#FCE9AE]" /> Inactive
+            <span className="h-3 w-3 rounded-sm bg-primary" /> Pending
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className="h-3 w-3 rounded-sm bg-[#DC2626]" /> Missed
           </span>
           <span className="flex items-center gap-1.5">
             <span className="h-3 w-3 rounded-sm bg-[#EEEFF1]" /> Upcoming

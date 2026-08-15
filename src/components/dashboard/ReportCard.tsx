@@ -1,4 +1,4 @@
-import { DownloadIcon, ReportIcon } from "@/components/ui/icons";
+import { DownloadIcon, EditIcon, LockIcon, ReportIcon } from "@/components/ui/icons";
 import type { EntryStatus } from "@/components/dashboard/StatusBadge";
 
 export interface ReportEntry {
@@ -30,10 +30,19 @@ interface ReportCardProps {
   entry: ReportEntry;
   onOpen: () => void;
   onDownload: () => void;
+  onEdit?: () => void;
+  canEdit?: boolean;
   compact?: boolean;
 }
 
-export function ReportCard({ entry, onOpen, onDownload, compact = false }: ReportCardProps) {
+export function ReportCard({
+  entry,
+  onOpen,
+  onDownload,
+  onEdit,
+  canEdit,
+  compact = false,
+}: ReportCardProps) {
   return (
     <div className="rounded-2xl border border-[#E5E7EB] bg-white p-6">
       <div className="flex items-start justify-between">
@@ -51,13 +60,34 @@ export function ReportCard({ entry, onOpen, onDownload, compact = false }: Repor
         </button>
       </p>
 
-      <button
-        onClick={onDownload}
-        className="mt-5 inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-[#1A1A1A] hover:bg-[#e6ac00]"
-      >
-        <DownloadIcon className="h-4 w-4" />
-        Download
-      </button>
+      <div className="mt-5 flex flex-wrap items-center gap-3">
+        <button
+          onClick={onDownload}
+          className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-[#1A1A1A] hover:bg-[#e6ac00]"
+        >
+          <DownloadIcon className="h-4 w-4" />
+          Download
+        </button>
+
+        {onEdit &&
+          (canEdit ? (
+            <button
+              onClick={onEdit}
+              className="inline-flex items-center gap-2 rounded-full border border-[#E5E7EB] px-5 py-2.5 text-sm font-semibold text-[#1A1A1A] hover:bg-gray-50"
+            >
+              <EditIcon className="h-4 w-4" />
+              Edit
+            </button>
+          ) : (
+            <span
+              title="Logs can only be edited within 5 hours of creation."
+              className="inline-flex items-center gap-1.5 text-xs text-[#9CA3AF]"
+            >
+              <LockIcon className="h-3.5 w-3.5" />
+              Editing closed
+            </span>
+          ))}
+      </div>
     </div>
   );
 }

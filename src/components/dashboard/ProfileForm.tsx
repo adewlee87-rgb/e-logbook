@@ -96,7 +96,7 @@ export function ProfileForm({
         </div>
       )}
 
-      <div className="mt-10 flex justify-center sm:justify-end">
+      <div className="mt-10 flex justify-center">
         <AvatarUpload userId={userId} name={fullName || "Student"} avatarUrl={avatarUrl} size={128} />
       </div>
 

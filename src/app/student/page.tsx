@@ -44,6 +44,8 @@ export default async function StudentDashboardPage() {
     .order("date", { ascending: false });
 
   const allEntries = entries ?? [];
+  const todayKey = new Date().toISOString().slice(0, 10);
+  const alreadyLoggedToday = allEntries.some((e) => e.date === todayKey);
   const submittedEntries = allEntries.filter((e) => e.status !== "draft");
 
   const totalSubmissions = submittedEntries.length;
@@ -99,7 +101,7 @@ export default async function StudentDashboardPage() {
             {profile?.first_name ?? "Student"}
           </h2>
         </div>
-        <AddNewLogButton />
+        <AddNewLogButton alreadyLoggedToday={alreadyLoggedToday} />
       </div>
 
       <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
