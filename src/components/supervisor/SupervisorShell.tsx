@@ -18,9 +18,21 @@ import {
 import { initials } from "@/lib/supervisor";
 
 const NAV = [
-  { label: "Dashboard", href: "/supervisor", match: (p: string) => p === "/supervisor" },
-  { label: "My Students", href: "/supervisor/students", match: (p: string) => p.startsWith("/supervisor/students") },
-  { label: "Review History", href: "/supervisor/history", match: (p: string) => p.startsWith("/supervisor/history") },
+  {
+    label: "Dashboard",
+    href: "/supervisor",
+    match: (p: string) => p === "/supervisor",
+  },
+  {
+    label: "My Students",
+    href: "/supervisor/students",
+    match: (p: string) => p.startsWith("/supervisor/students"),
+  },
+  {
+    label: "Review History",
+    href: "/supervisor/history",
+    match: (p: string) => p.startsWith("/supervisor/history"),
+  },
 ];
 
 interface SupervisorShellProps {
@@ -29,7 +41,11 @@ interface SupervisorShellProps {
   user: { name: string; studentId: string; avatarUrl?: string | null };
 }
 
-export function SupervisorShell({ children, userId, user }: SupervisorShellProps) {
+export function SupervisorShell({
+  children,
+  userId,
+  user,
+}: SupervisorShellProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -49,7 +65,11 @@ export function SupervisorShell({ children, userId, user }: SupervisorShellProps
   function handleSearch(e: React.FormEvent) {
     e.preventDefault();
     const q = query.trim();
-    router.push(q ? `/supervisor/students?q=${encodeURIComponent(q)}` : "/supervisor/students");
+    router.push(
+      q
+        ? `/supervisor/students?q=${encodeURIComponent(q)}`
+        : "/supervisor/students",
+    );
   }
 
   return (
@@ -70,17 +90,25 @@ export function SupervisorShell({ children, userId, user }: SupervisorShellProps
                 <BookIcon className="h-5 w-5" />
               </span>
               <span className="leading-tight">
-                <span className="block text-sm font-bold text-[#1A1A1A]">LogMaster Pro</span>
-                <span className="block text-[11px] text-[#9CA3AF]">ITF Official Portal</span>
+                <span className="block text-sm font-bold text-[#1A1A1A]">
+                  LogMaster Pro
+                </span>
+                <span className="block text-[11px] text-[#9CA3AF]">
+                  ITF Official Portal
+                </span>
               </span>
             </Link>
-            <button onClick={() => setSidebarOpen(false)} aria-label="Close menu" className="text-[#666] md:hidden">
+            <button
+              onClick={() => setSidebarOpen(false)}
+              aria-label="Close menu"
+              className="text-[#666] md:hidden"
+            >
               <CloseIcon className="h-5 w-5" />
             </button>
           </div>
 
           {/* Mobile-only primary nav (top nav collapses here on small screens) */}
-          <nav className="mt-8 flex flex-col gap-1 md:hidden">
+          <nav className="mt-8 flex flex-col gap-1">
             {NAV.map((item) => {
               const active = item.match(pathname);
               return (
@@ -89,7 +117,9 @@ export function SupervisorShell({ children, userId, user }: SupervisorShellProps
                   href={item.href}
                   onClick={() => setSidebarOpen(false)}
                   className={`rounded-lg px-4 py-2.5 text-sm font-medium ${
-                    active ? "bg-[#FEF3D6] text-[#1A1A1A]" : "text-[#666] hover:bg-gray-50"
+                    active
+                      ? "bg-[#FEF3D6] text-[#1A1A1A]"
+                      : "text-[#666] hover:bg-gray-50"
                   }`}
                 >
                   {item.label}
@@ -98,16 +128,6 @@ export function SupervisorShell({ children, userId, user }: SupervisorShellProps
             })}
           </nav>
 
-          <nav className="mt-8 flex flex-col gap-1">
-            <Link
-              href="/supervisor"
-              onClick={() => setSidebarOpen(false)}
-              className="flex items-center gap-3 rounded-lg px-4 py-2.5 text-sm font-medium text-[#666] hover:bg-gray-50"
-            >
-              <FolderIcon className="h-5 w-5" />
-              Projects
-            </Link>
-          </nav>
         </div>
 
         <div className="flex flex-col gap-1 border-t border-gray-100 pt-4">
@@ -115,7 +135,9 @@ export function SupervisorShell({ children, userId, user }: SupervisorShellProps
             href="/supervisor/settings"
             onClick={() => setSidebarOpen(false)}
             className={`flex items-center gap-3 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors ${
-              onSettings ? "bg-[#FEF3D6] text-[#1A1A1A]" : "text-[#666] hover:bg-gray-50"
+              onSettings
+                ? "bg-[#FEF3D6] text-[#1A1A1A]"
+                : "text-[#666] hover:bg-gray-50"
             }`}
           >
             <SettingsIcon className="h-5 w-5" />
@@ -133,7 +155,10 @@ export function SupervisorShell({ children, userId, user }: SupervisorShellProps
       </aside>
 
       {sidebarOpen && (
-        <div className="fixed inset-0 z-30 bg-black/30 md:hidden" onClick={() => setSidebarOpen(false)} />
+        <div
+          className="fixed inset-0 z-30 bg-black/30 md:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
       )}
 
       {/* Main column */}
@@ -149,29 +174,14 @@ export function SupervisorShell({ children, userId, user }: SupervisorShellProps
               <MenuIcon className="h-6 w-6" />
             </button>
 
-            <span className="text-lg font-extrabold tracking-tight text-primary">E-Logbook</span>
+            <span className="text-lg font-extrabold tracking-tight text-primary">
+              E-Logbook
+            </span>
 
-            <nav className="ml-4 hidden items-center gap-1 md:flex">
-              {NAV.map((item) => {
-                const active = item.match(pathname);
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className={`relative px-3 py-2 text-sm font-medium transition-colors ${
-                      active ? "text-primary" : "text-[#4B5563] hover:text-[#1A1A1A]"
-                    }`}
-                  >
-                    {item.label}
-                    {active && (
-                      <span className="absolute inset-x-3 -bottom-[13px] h-0.5 rounded-full bg-primary" />
-                    )}
-                  </Link>
-                );
-              })}
-            </nav>
-
-            <form onSubmit={handleSearch} className="ml-auto hidden max-w-xs flex-1 sm:block">
+            <form
+              onSubmit={handleSearch}
+              className="ml-auto hidden max-w-xs flex-1 sm:block"
+            >
               <div className="relative">
                 <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[#9CA3AF]">
                   <SearchIcon className="h-4 w-4" />
@@ -193,22 +203,29 @@ export function SupervisorShell({ children, userId, user }: SupervisorShellProps
               <div className="flex items-center gap-2.5">
                 {user.avatarUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={user.avatarUrl} alt={user.name} className="h-9 w-9 rounded-full object-cover" />
+                  <img
+                    src={user.avatarUrl}
+                    alt={user.name}
+                    className="h-9 w-9 rounded-full object-cover"
+                  />
                 ) : (
                   <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#FEF3D6] text-xs font-semibold text-[#1A1A1A]">
                     {initials(user.name)}
                   </div>
                 )}
                 <div className="hidden leading-tight lg:block">
-                  <div className="text-sm font-semibold text-[#1A1A1A]">{user.name}</div>
-                  <div className="text-xs text-[#9CA3AF]">Student ID: #{user.studentId.replace(/\D/g, "")}</div>
+                  <div className="text-sm font-semibold text-[#1A1A1A]">
+                    {user.name}
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </header>
 
-        <main className="flex-1 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">{children}</main>
+        <main className="flex-1 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+          {children}
+        </main>
       </div>
     </div>
   );
