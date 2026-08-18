@@ -36,7 +36,7 @@ export function DashboardShell({ children, navItems }: DashboardShellProps) {
           >
             <MenuIcon className="h-6 w-6" />
           </button>
-          <span className="text-lg font-bold text-[#1A1A1A]">Y'ello Log</span>
+          <span className="text-lg font-bold text-[#1A1A1A]">Y&apos;ello Log</span>
         </div>
 
         <main className="flex-1 px-4 py-6 sm:px-6 lg:px-10 lg:py-8">

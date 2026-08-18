@@ -6,8 +6,6 @@ import { ReactNode, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { NotificationsBell } from "@/components/dashboard/NotificationsBell";
 import {
-  BookIcon,
-  FolderIcon,
   SettingsIcon,
   LogoutIcon,
   SearchIcon,
@@ -92,7 +90,7 @@ export function SupervisorShell({
               </span>
               <span className="leading-tight">
                 <span className="block text-sm font-bold text-[#1A1A1A]">
-                  Y'ello Log
+                  Y&apos;ello Log
                 </span>
                 {/* <span className="block text-[11px] text-[#9CA3AF]">
                   ITF Official Portal

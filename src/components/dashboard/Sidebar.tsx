@@ -58,7 +58,7 @@ export function Sidebar({
     >
       <div>
         <div className="flex items-center justify-between">
-          <div className="text-2xl font-bold text-[#1A1A1A]">Y'ello Log</div>
+          <div className="text-2xl font-bold text-[#1A1A1A]">Y&apos;ello Log</div>
           <button
             onClick={onClose}
             aria-label="Close menu"

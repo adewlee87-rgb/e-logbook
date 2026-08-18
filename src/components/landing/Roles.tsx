@@ -4,7 +4,7 @@ import { ReactNode } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { Section } from "@/components/landing/Section";
 import { Reveal } from "@/components/landing/motion";
-import { ProfileIcon, ReportIcon, SettingsIcon } from "@/components/ui/icons";
+import { ProfileIcon, SettingsIcon } from "@/components/ui/icons";
 
 interface Role {
   icon: ReactNode;

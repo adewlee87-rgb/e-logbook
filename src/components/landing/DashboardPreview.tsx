@@ -78,7 +78,7 @@ export function DashboardPreview() {
           <span className="h-3 w-3 rounded-full bg-[#FEF3D6]" />
           <span className="h-3 w-3 rounded-full bg-[#DCFCE7]" />
           <span className="ml-3 text-xs text-[#9CA3AF]">
-            Y'ello Log · Student dashboard
+            Y&apos;ello Log · Student dashboard
           </span>
         </div>
 

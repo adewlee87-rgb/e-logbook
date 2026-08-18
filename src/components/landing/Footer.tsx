@@ -44,7 +44,7 @@ export function Footer() {
                 Y
               </span>
               <span className="text-lg font-bold text-[#1A1A1A]">
-                Y'ello Log
+                Y&apos;ello Log
               </span>
             </div>
             <p className="mt-4 max-w-xs text-sm text-[#666]">
@@ -123,7 +123,7 @@ export function Footer() {
 
         <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-[#E5E7EB] pt-8 sm:flex-row">
           <p className="text-sm text-[#9CA3AF]">
-            © {year} Y'ello Log. All rights reserved.
+            © {year} Y&apos;ello Log. All rights reserved.
           </p>
           <p className="text-sm text-[#9CA3AF]">Built for Internship.</p>
         </div>

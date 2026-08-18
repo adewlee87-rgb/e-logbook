@@ -7,11 +7,9 @@ import { Reveal } from "@/components/landing/motion";
 import {
   BadgeCheckIcon,
   BellIcon,
-  CalendarCheckIcon,
   CameraIcon,
   DownloadIcon,
   HourglassIcon,
-  ReportIcon,
   StopwatchIcon,
 } from "@/components/ui/icons";
 
@@ -81,7 +79,7 @@ export function Features() {
           Everything your logbook needs
         </h2>
         <p className="mt-4 text-[#666]">
-          From the first entry to the final report, Y'ello Log covers the whole
+          From the first entry to the final report, Y&apos;ello Log covers the whole
           SIWES workflow for students, supervisors, and ITF.
         </p>
       </Reveal>

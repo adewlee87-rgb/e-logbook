@@ -27,7 +27,7 @@ function Wordmark() {
       >
         Y
       </motion.span>
-      <span className="text-lg font-bold text-[#1A1A1A]">Y'ello Log</span>
+      <span className="text-lg font-bold text-[#1A1A1A]">Y&apos;ello Log</span>
     </Link>
   );
 }

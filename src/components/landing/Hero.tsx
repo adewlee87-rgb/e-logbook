@@ -79,7 +79,7 @@ export function Hero() {
               variants={item}
               className="mt-5 max-w-xl text-base leading-relaxed text-[#666] sm:text-lg"
             >
-              Y'ello Log digitizes the Universal E-Logbook for Nigerian
+              Y&apos;ello Log digitizes the Universal E-Logbook for Nigerian
               universities. Students record daily training activities with photo
               evidence, supervisors review and stamp them, and ITF gets
               verifiable oversight — all in one place.

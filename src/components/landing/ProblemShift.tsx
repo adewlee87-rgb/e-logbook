@@ -78,7 +78,7 @@ export function ProblemShift() {
         </h2>
         <p className="mt-4 text-[#666]">
           SIWES matters — but the way it&apos;s recorded hasn&apos;t changed in
-          decades. Y'ello Log fixes that.
+          decades. Y&apos;ello Log fixes that.
         </p>
       </Reveal>
 
@@ -128,7 +128,7 @@ export function ProblemShift() {
           transition={{ duration: 0.6, ease: EASE }}
         >
           <span className="inline-flex items-center gap-2 rounded-full bg-[#DCFCE7] px-3 py-1 text-xs font-semibold text-[#16A34A]">
-            The Y'ello Log way
+            The Y&apos;ello Log way
           </span>
           <h3 className="mt-4 text-xl font-bold text-[#1A1A1A]">
             A living digital record
