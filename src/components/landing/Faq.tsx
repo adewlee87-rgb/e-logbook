@@ -16,20 +16,13 @@ const FAQS = [
     a: "Yes. Every entry can carry photos and files uploaded straight from a phone, so the work is backed by proof, not just a written claim.",
   },
   {
-    q: "What does the ITF official do on the platform?",
-    a: "ITF officials review approved entries across students and placements and can add official comments, giving them verifiable oversight of training.",
-  },
-  {
     q: "Is our data safe?",
     a: "Entries and media are stored securely in the cloud with access controlled by role — students, supervisors, ITF, and admins each see only what they should.",
   },
-  {
-    q: "What does it cost an institution?",
-    a: "Pricing is arranged per institution. Use “Request access” and we’ll tailor a rollout for your department or university.",
-  },
+
   {
     q: "Does it work on phones?",
-    a: "Fully. e-log is responsive and built mobile-first, so students can log activities from any phone while they’re on placement.",
+    a: "Fully. Y'ello Log is responsive and built mobile-first, so students can log activities from any phone while they’re on placement.",
   },
 ];
 
@@ -49,7 +42,9 @@ function FaqItem({ q, a, index }: { q: string; a: string; index: number }) {
         onClick={() => setOpen((v) => !v)}
         className="flex w-full items-center justify-between gap-4 px-6 py-5 text-left"
       >
-        <span className="text-sm font-semibold text-[#1A1A1A] sm:text-base">{q}</span>
+        <span className="text-sm font-semibold text-[#1A1A1A] sm:text-base">
+          {q}
+        </span>
         <motion.span
           animate={{ rotate: open ? 180 : 0 }}
           transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
@@ -87,7 +82,8 @@ export function Faq() {
           Frequently asked questions
         </h2>
         <p className="mt-4 text-[#666]">
-          Everything students and institutions usually ask before getting started.
+          Everything students and institutions usually ask before getting
+          started.
         </p>
       </Reveal>
 

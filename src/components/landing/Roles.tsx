@@ -34,16 +34,7 @@ const ROLES: Role[] = [
       "Stamp logs as they happen",
     ],
   },
-  {
-    icon: <ReportIcon className="h-5 w-5" />,
-    name: "ITF Official",
-    tagline: "Provides oversight",
-    points: [
-      "View approved entries across students",
-      "Add official comments",
-      "Verify training at a glance",
-    ],
-  },
+ 
   {
     icon: <SettingsIcon className="h-5 w-5" />,
     name: "Admin",
@@ -110,7 +101,7 @@ export function Roles() {
           </Reveal>
 
           <motion.div
-            className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4"
+            className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3"
             variants={reduce ? undefined : gridParent}
             initial={reduce ? false : "hidden"}
             whileInView={reduce ? undefined : "visible"}
@@ -122,7 +113,7 @@ export function Roles() {
                 variants={cardVariant}
                 whileHover={reduce ? undefined : { y: -6, borderColor: "rgba(255,193,7,0.5)" }}
                 transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                className="rounded-2xl border border-white/10 bg-white/[0.04] p-6 backdrop-blur-sm"
+                className="rounded-2xl w-full border border-white/10 bg-white/[0.04] p-6 backdrop-blur-sm"
               >
                 <motion.span
                   className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-[#1A1A1A]"

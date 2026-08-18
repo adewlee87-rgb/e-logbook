@@ -1,4 +1,4 @@
--- e-log initial schema: enums, tables, signup trigger, RLS policies
+-- Y'ello Log initial schema: enums, tables, signup trigger, RLS policies
 
 -- ============================================================
 -- Enums

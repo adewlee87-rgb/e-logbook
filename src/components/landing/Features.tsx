@@ -23,12 +23,6 @@ interface Feature {
 
 const FEATURES: Feature[] = [
   {
-    icon: <CalendarCheckIcon className="h-5 w-5" />,
-    title: "Daily, weekly & monthly logs",
-    description:
-      "Capture activities at the cadence your programme requires, each with an objective and observations.",
-  },
-  {
     icon: <CameraIcon className="h-5 w-5" />,
     title: "Photo & file evidence",
     description:
@@ -39,12 +33,6 @@ const FEATURES: Feature[] = [
     title: "Supervisor review & stamping",
     description:
       "Supervisors approve or send back entries with comments — your record is verified, not just claimed.",
-  },
-  {
-    icon: <ReportIcon className="h-5 w-5" />,
-    title: "ITF oversight",
-    description:
-      "ITF officials view approved entries and add official comments across students and placements.",
   },
   {
     icon: <BellIcon className="h-5 w-5" />,
@@ -93,8 +81,8 @@ export function Features() {
           Everything your logbook needs
         </h2>
         <p className="mt-4 text-[#666]">
-          From the first entry to the final report, e-log covers the whole SIWES
-          workflow for students, supervisors, and ITF.
+          From the first entry to the final report, Y'ello Log covers the whole
+          SIWES workflow for students, supervisors, and ITF.
         </p>
       </Reveal>
 

@@ -14,7 +14,11 @@ export function DashboardShell({ children, navItems }: DashboardShellProps) {
 
   return (
     <div className="flex min-h-screen bg-[#F7F7F8]">
-      <Sidebar items={navItems} open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <Sidebar
+        items={navItems}
+        open={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+      />
 
       {sidebarOpen && (
         <div
@@ -32,10 +36,12 @@ export function DashboardShell({ children, navItems }: DashboardShellProps) {
           >
             <MenuIcon className="h-6 w-6" />
           </button>
-          <span className="text-lg font-bold text-[#1A1A1A]">e-log</span>
+          <span className="text-lg font-bold text-[#1A1A1A]">Y'ello Log</span>
         </div>
 
-        <main className="flex-1 px-4 py-6 sm:px-6 lg:px-10 lg:py-8">{children}</main>
+        <main className="flex-1 px-4 py-6 sm:px-6 lg:px-10 lg:py-8">
+          {children}
+        </main>
       </div>
     </div>
   );

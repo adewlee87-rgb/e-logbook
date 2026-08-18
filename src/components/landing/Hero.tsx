@@ -79,14 +79,20 @@ export function Hero() {
               variants={item}
               className="mt-5 max-w-xl text-base leading-relaxed text-[#666] sm:text-lg"
             >
-              e-log digitizes the Universal E-Logbook for Nigerian universities.
-              Students record daily training activities with photo evidence,
-              supervisors review and stamp them, and ITF gets verifiable oversight
-              — all in one place.
+              Y'ello Log digitizes the Universal E-Logbook for Nigerian
+              universities. Students record daily training activities with photo
+              evidence, supervisors review and stamp them, and ITF gets
+              verifiable oversight — all in one place.
             </motion.p>
 
-            <motion.div variants={item} className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <motion.div whileHover={reduce ? undefined : { scale: 1.03 }} whileTap={{ scale: 0.98 }}>
+            <motion.div
+              variants={item}
+              className="mt-8 flex flex-col gap-3 sm:flex-row"
+            >
+              <motion.div
+                whileHover={reduce ? undefined : { scale: 1.03 }}
+                whileTap={{ scale: 0.98 }}
+              >
                 <Link
                   href="/signup"
                   className="block rounded-full bg-primary px-7 py-3.5 text-center text-sm font-semibold text-[#1A1A1A] shadow-lg shadow-primary/30 transition-colors hover:bg-[#e6ac00]"
@@ -94,7 +100,10 @@ export function Hero() {
                   Get started
                 </Link>
               </motion.div>
-              <motion.div whileHover={reduce ? undefined : { scale: 1.03 }} whileTap={{ scale: 0.98 }}>
+              <motion.div
+                whileHover={reduce ? undefined : { scale: 1.03 }}
+                whileTap={{ scale: 0.98 }}
+              >
                 <Link
                   href="/signup"
                   className="block rounded-full border border-[#E5E7EB] bg-white/80 px-7 py-3.5 text-center text-sm font-semibold text-[#1A1A1A] backdrop-blur transition-colors hover:bg-gray-50"
@@ -137,7 +146,10 @@ export function Hero() {
                 className="object-cover"
               />
               {/* Shimmer sweep */}
-              <div aria-hidden className="shimmer pointer-events-none absolute inset-0" />
+              <div
+                aria-hidden
+                className="shimmer pointer-events-none absolute inset-0"
+              />
             </div>
 
             {/* Floating stamped badge */}
@@ -149,8 +161,12 @@ export function Hero() {
                 <BadgeCheckIcon className="h-5 w-5" />
               </span>
               <div className="leading-tight">
-                <div className="text-sm font-semibold text-[#1A1A1A]">Log approved</div>
-                <div className="text-xs text-[#666]">Stamped by your supervisor</div>
+                <div className="text-sm font-semibold text-[#1A1A1A]">
+                  Log approved
+                </div>
+                <div className="text-xs text-[#666]">
+                  Stamped by your supervisor
+                </div>
               </div>
             </motion.div>
           </motion.div>
