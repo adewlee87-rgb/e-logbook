@@ -12,9 +12,9 @@ import { FinalCta } from "@/components/landing/FinalCta";
 import { Footer } from "@/components/landing/Footer";
 
 export const metadata: Metadata = {
-  title: "e-log — Digitize your SIWES logbook",
+  title: "Y'ello Log — Digitize your SIWES logbook",
   description:
-    "e-log is the Universal E-Logbook for Nigerian universities. Log daily training activities with photo evidence, get supervisor approval, and export verifiable reports — no more paper logbook.",
+    "Y'ello Log is the Universal E-Logbook for Nigerian universities. Log daily training activities with photo evidence, get supervisor approval, and export verifiable reports — no more paper logbook.",
 };
 
 export default function LandingPage() {

@@ -23,16 +23,37 @@ const EASE = [0.22, 1, 0.36, 1] as const;
 
 function CrossIcon() {
   return (
-    <svg viewBox="0 0 20 20" fill="none" className="h-3.5 w-3.5" aria-hidden="true">
-      <path d="M5 5l10 10M15 5L5 15" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+    <svg
+      viewBox="0 0 20 20"
+      fill="none"
+      className="h-3.5 w-3.5"
+      aria-hidden="true"
+    >
+      <path
+        d="M5 5l10 10M15 5L5 15"
+        stroke="currentColor"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+      />
     </svg>
   );
 }
 
 function CheckIcon() {
   return (
-    <svg viewBox="0 0 20 20" fill="none" className="h-3.5 w-3.5" aria-hidden="true">
-      <path d="M4 10.5l4 4 8-9" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+    <svg
+      viewBox="0 0 20 20"
+      fill="none"
+      className="h-3.5 w-3.5"
+      aria-hidden="true"
+    >
+      <path
+        d="M4 10.5l4 4 8-9"
+        stroke="currentColor"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   );
 }
@@ -56,8 +77,8 @@ export function ProblemShift() {
           The paper logbook is holding students back
         </h2>
         <p className="mt-4 text-[#666]">
-          SIWES matters — but the way it&apos;s recorded hasn&apos;t changed in decades.
-          e-log fixes that.
+          SIWES matters — but the way it&apos;s recorded hasn&apos;t changed in
+          decades. Y'ello Log fixes that.
         </p>
       </Reveal>
 
@@ -73,7 +94,9 @@ export function ProblemShift() {
           <span className="inline-flex items-center gap-2 rounded-full bg-[#FEE2E2] px-3 py-1 text-xs font-semibold text-[#DC2626]">
             The old way
           </span>
-          <h3 className="mt-4 text-xl font-bold text-[#1A1A1A]">Paper logbooks</h3>
+          <h3 className="mt-4 text-xl font-bold text-[#1A1A1A]">
+            Paper logbooks
+          </h3>
           <motion.ul
             className="mt-6 space-y-4"
             variants={reduce ? undefined : listParent}
@@ -82,7 +105,11 @@ export function ProblemShift() {
             viewport={{ once: true, margin: "-80px" }}
           >
             {PROBLEMS.map((item) => (
-              <motion.li key={item} variants={listItem} className="flex items-start gap-3">
+              <motion.li
+                key={item}
+                variants={listItem}
+                className="flex items-start gap-3"
+              >
                 <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#FEE2E2] text-[#DC2626]">
                   <CrossIcon />
                 </span>
@@ -101,9 +128,11 @@ export function ProblemShift() {
           transition={{ duration: 0.6, ease: EASE }}
         >
           <span className="inline-flex items-center gap-2 rounded-full bg-[#DCFCE7] px-3 py-1 text-xs font-semibold text-[#16A34A]">
-            The e-log way
+            The Y'ello Log way
           </span>
-          <h3 className="mt-4 text-xl font-bold text-[#1A1A1A]">A living digital record</h3>
+          <h3 className="mt-4 text-xl font-bold text-[#1A1A1A]">
+            A living digital record
+          </h3>
           <motion.ul
             className="mt-6 space-y-4"
             variants={reduce ? undefined : listParent}
@@ -112,7 +141,11 @@ export function ProblemShift() {
             viewport={{ once: true, margin: "-80px" }}
           >
             {SHIFTS.map((item) => (
-              <motion.li key={item} variants={listItem} className="flex items-start gap-3">
+              <motion.li
+                key={item}
+                variants={listItem}
+                className="flex items-start gap-3"
+              >
                 <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#DCFCE7] text-[#16A34A]">
                   <CheckIcon />
                 </span>

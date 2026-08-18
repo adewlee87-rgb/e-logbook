@@ -33,7 +33,11 @@ interface SidebarProps {
   onClose?: () => void;
 }
 
-export function Sidebar({ items = defaultNavItems, open = false, onClose }: SidebarProps) {
+export function Sidebar({
+  items = defaultNavItems,
+  open = false,
+  onClose,
+}: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [loggingOut, setLoggingOut] = useState(false);
@@ -54,7 +58,7 @@ export function Sidebar({ items = defaultNavItems, open = false, onClose }: Side
     >
       <div>
         <div className="flex items-center justify-between">
-          <div className="text-2xl font-bold text-[#1A1A1A]">e-log</div>
+          <div className="text-2xl font-bold text-[#1A1A1A]">Y'ello Log</div>
           <button
             onClick={onClose}
             aria-label="Close menu"

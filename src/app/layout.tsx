@@ -5,7 +5,7 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 export const metadata: Metadata = {
-  title: "e-log — Universal E-Logbook",
+  title: "Y'ello Log — Universal E-Logbook",
   description: "Digital SIWES industrial training logbook",
 };
 

@@ -10,7 +10,7 @@ const PRODUCT_LINKS = [
   { label: "FAQ", href: "#faq" },
 ];
 
-const ROLE_LINKS = ["Students", "Supervisors", "ITF Officials", "Admins"];
+const ROLE_LINKS = ["Students", "Supervisors", "Admins"];
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -41,9 +41,11 @@ export function Footer() {
           <motion.div variants={col}>
             <div className="flex items-center gap-2">
               <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-sm font-bold text-[#1A1A1A]">
-                e
+                Y
               </span>
-              <span className="text-lg font-bold text-[#1A1A1A]">e-log</span>
+              <span className="text-lg font-bold text-[#1A1A1A]">
+                Y'ello Log
+              </span>
             </div>
             <p className="mt-4 max-w-xs text-sm text-[#666]">
               The Universal E-Logbook — digitizing SIWES industrial training for
@@ -57,7 +59,10 @@ export function Footer() {
             <ul className="mt-4 space-y-3">
               {PRODUCT_LINKS.map((link) => (
                 <li key={link.href}>
-                  <a href={link.href} className="text-sm text-[#666] transition-colors hover:text-[#1A1A1A]">
+                  <a
+                    href={link.href}
+                    className="text-sm text-[#666] transition-colors hover:text-[#1A1A1A]"
+                  >
                     {link.label}
                   </a>
                 </li>
@@ -67,11 +72,14 @@ export function Footer() {
 
           {/* Roles */}
           <motion.div variants={col}>
-            <h3 className="text-sm font-semibold text-[#1A1A1A]">For</h3>
+            <h3 className="text-sm font-semibold text-[#1A1A1A]">Roles</h3>
             <ul className="mt-4 space-y-3">
               {ROLE_LINKS.map((label) => (
                 <li key={label}>
-                  <a href="#roles" className="text-sm text-[#666] transition-colors hover:text-[#1A1A1A]">
+                  <a
+                    href="#roles"
+                    className="text-sm text-[#666] transition-colors hover:text-[#1A1A1A]"
+                  >
                     {label}
                   </a>
                 </li>
@@ -81,15 +89,23 @@ export function Footer() {
 
           {/* Get started */}
           <motion.div variants={col}>
-            <h3 className="text-sm font-semibold text-[#1A1A1A]">Get started</h3>
+            <h3 className="text-sm font-semibold text-[#1A1A1A]">
+              Get started
+            </h3>
             <ul className="mt-4 space-y-3">
               <li>
-                <Link href="/signup" className="text-sm text-[#666] transition-colors hover:text-[#1A1A1A]">
+                <Link
+                  href="/signup"
+                  className="text-sm text-[#666] transition-colors hover:text-[#1A1A1A]"
+                >
                   Create an account
                 </Link>
               </li>
               <li>
-                <Link href="/login" className="text-sm text-[#666] transition-colors hover:text-[#1A1A1A]">
+                <Link
+                  href="/login"
+                  className="text-sm text-[#666] transition-colors hover:text-[#1A1A1A]"
+                >
                   Log in
                 </Link>
               </li>
@@ -107,9 +123,9 @@ export function Footer() {
 
         <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-[#E5E7EB] pt-8 sm:flex-row">
           <p className="text-sm text-[#9CA3AF]">
-            © {year} e-log. All rights reserved.
+            © {year} Y'ello Log. All rights reserved.
           </p>
-          <p className="text-sm text-[#9CA3AF]">Built for SIWES.</p>
+          <p className="text-sm text-[#9CA3AF]">Built for Internship.</p>
         </div>
       </div>
     </footer>

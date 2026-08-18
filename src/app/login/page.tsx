@@ -31,10 +31,12 @@ function LoginForm() {
     setLoading(true);
 
     const supabase = createClient();
-    const { data, error: signInError } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    const { data, error: signInError } = await supabase.auth.signInWithPassword(
+      {
+        email,
+        password,
+      },
+    );
 
     if (signInError) {
       if (signInError.message.toLowerCase().includes("email not confirmed")) {
@@ -66,9 +68,11 @@ function LoginForm() {
   return (
     <>
       <h1 className="text-3xl font-bold text-[#1A1A1A]">
-        Welcome to <span className="font-bold">e-log</span>
+        Welcome to <span className="font-bold">Y'ello Log</span>
       </h1>
-      <p className="mt-1 text-sm text-[#666]">Your Internship Story Starts Here</p>
+      <p className="mt-1 text-sm text-[#666]">
+        Your Internship Story Starts Here
+      </p>
 
       {notice && (
         <div className="mt-6">

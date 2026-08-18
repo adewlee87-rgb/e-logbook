@@ -87,15 +87,16 @@ export function SupervisorShell({
           <div className="flex items-center justify-between">
             <Link href="/supervisor" className="flex items-center gap-3">
               <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-[#1A1A1A]">
-                <BookIcon className="h-5 w-5" />
+                {/* <BookIcon className="h-5 w-5" /> */}
+                Y
               </span>
               <span className="leading-tight">
                 <span className="block text-sm font-bold text-[#1A1A1A]">
-                  LogMaster Pro
+                  Y'ello Log
                 </span>
-                <span className="block text-[11px] text-[#9CA3AF]">
+                {/* <span className="block text-[11px] text-[#9CA3AF]">
                   ITF Official Portal
-                </span>
+                </span> */}
               </span>
             </Link>
             <button
@@ -127,7 +128,6 @@ export function SupervisorShell({
               );
             })}
           </nav>
-
         </div>
 
         <div className="flex flex-col gap-1 border-t border-gray-100 pt-4">
@@ -175,7 +175,7 @@ export function SupervisorShell({
             </button>
 
             <span className="text-lg font-extrabold tracking-tight text-primary">
-              E-Logbook
+              Dashboard
             </span>
 
             <form

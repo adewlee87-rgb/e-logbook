@@ -1,4 +1,4 @@
--- e-log entry rules: one log per day + 5-hour edit window
+-- Y'ello Log entry rules: one log per day + 5-hour edit window
 -- Authoritative enforcement at the database level. The UI mirrors these rules
 -- for good UX, but this migration is what actually guarantees them.
 

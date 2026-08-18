@@ -4,7 +4,10 @@ import { motion, useReducedMotion } from "framer-motion";
 import { Section } from "@/components/landing/Section";
 import { Reveal } from "@/components/landing/motion";
 import { StatCard } from "@/components/dashboard/StatCard";
-import { StatusBadge, type EntryStatus } from "@/components/dashboard/StatusBadge";
+import {
+  StatusBadge,
+  type EntryStatus,
+} from "@/components/dashboard/StatusBadge";
 import {
   BadgeCheckIcon,
   CalendarCheckIcon,
@@ -13,9 +16,21 @@ import {
 } from "@/components/ui/icons";
 
 const RECENT: { date: string; description: string; status: EntryStatus }[] = [
-  { date: "12 Aug", description: "Configured the CI pipeline and ran the first build", status: "approved" },
-  { date: "11 Aug", description: "Shadowed the QA team during release testing", status: "submitted" },
-  { date: "09 Aug", description: "Documented the onboarding flow for new interns", status: "rejected" },
+  {
+    date: "12 Aug",
+    description: "Configured the CI pipeline and ran the first build",
+    status: "approved",
+  },
+  {
+    date: "11 Aug",
+    description: "Shadowed the QA team during release testing",
+    status: "submitted",
+  },
+  {
+    date: "09 Aug",
+    description: "Documented the onboarding flow for new interns",
+    status: "rejected",
+  },
 ];
 
 const EASE = [0.22, 1, 0.36, 1] as const;
@@ -26,7 +41,12 @@ const cardsParent = {
 };
 const popIn = {
   hidden: { opacity: 0, y: 18, scale: 0.96 },
-  visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.45, ease: EASE } },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: { duration: 0.45, ease: EASE },
+  },
 };
 
 export function DashboardPreview() {
@@ -57,7 +77,9 @@ export function DashboardPreview() {
           <span className="h-3 w-3 rounded-full bg-[#FEE2E2]" />
           <span className="h-3 w-3 rounded-full bg-[#FEF3D6]" />
           <span className="h-3 w-3 rounded-full bg-[#DCFCE7]" />
-          <span className="ml-3 text-xs text-[#9CA3AF]">e-log · Student dashboard</span>
+          <span className="ml-3 text-xs text-[#9CA3AF]">
+            Y'ello Log · Student dashboard
+          </span>
         </div>
 
         <div className="bg-[#FAFAFA] p-4 sm:p-6">
@@ -70,7 +92,11 @@ export function DashboardPreview() {
             viewport={{ once: true, margin: "-60px" }}
           >
             <motion.div variants={popIn}>
-              <StatCard icon={<BadgeCheckIcon />} label="Total Submission" value="24" />
+              <StatCard
+                icon={<BadgeCheckIcon />}
+                label="Total Submission"
+                value="24"
+              />
             </motion.div>
             <motion.div variants={popIn}>
               <StatCard
@@ -89,16 +115,26 @@ export function DashboardPreview() {
               />
             </motion.div>
             <motion.div variants={popIn}>
-              <StatCard icon={<HourglassIcon />} label="Completion Progress" value="68%" />
+              <StatCard
+                icon={<HourglassIcon />}
+                label="Completion Progress"
+                value="68%"
+              />
             </motion.div>
             <motion.div variants={popIn}>
-              <StatCard icon={<CalendarCheckIcon />} label="Days Completed" value="82 days" />
+              <StatCard
+                icon={<CalendarCheckIcon />}
+                label="Days Completed"
+                value="82 days"
+              />
             </motion.div>
           </motion.div>
 
           {/* Recent activity — real StatusBadge */}
           <div className="mt-4 rounded-2xl border border-[#E5E7EB] bg-white p-5">
-            <h3 className="text-sm font-bold text-[#1A1A1A]">Recent Activity</h3>
+            <h3 className="text-sm font-bold text-[#1A1A1A]">
+              Recent Activity
+            </h3>
             <motion.div
               className="mt-4 divide-y divide-[#F3F4F6]"
               variants={reduce ? undefined : cardsParent}
@@ -113,7 +149,9 @@ export function DashboardPreview() {
                   className="flex items-center justify-between gap-4 py-3"
                 >
                   <div className="min-w-0">
-                    <p className="truncate text-sm text-[#1A1A1A]">{row.description}</p>
+                    <p className="truncate text-sm text-[#1A1A1A]">
+                      {row.description}
+                    </p>
                     <p className="text-xs text-[#9CA3AF]">{row.date}</p>
                   </div>
                   <StatusBadge status={row.status} />

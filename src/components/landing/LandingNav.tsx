@@ -15,15 +15,19 @@ const NAV_LINKS = [
 function Wordmark() {
   const reduce = useReducedMotion();
   return (
-    <Link href="/" className="flex items-center gap-2" aria-label="e-log home">
+    <Link
+      href="/"
+      className="flex items-center gap-2"
+      aria-label="Y'ello Log home"
+    >
       <motion.span
         whileHover={reduce ? undefined : { rotate: -10, scale: 1.1 }}
         transition={{ type: "spring", stiffness: 400, damping: 12 }}
         className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-sm font-bold text-[#1A1A1A]"
       >
-        e
+        Y
       </motion.span>
-      <span className="text-lg font-bold text-[#1A1A1A]">e-log</span>
+      <span className="text-lg font-bold text-[#1A1A1A]">Y'ello Log</span>
     </Link>
   );
 }
@@ -74,7 +78,10 @@ export function LandingNav() {
           >
             Log in
           </Link>
-          <motion.div whileHover={reduce ? undefined : { scale: 1.04 }} whileTap={{ scale: 0.97 }}>
+          <motion.div
+            whileHover={reduce ? undefined : { scale: 1.04 }}
+            whileTap={{ scale: 0.97 }}
+          >
             <Link
               href="/signup"
               className="block rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-[#1A1A1A] shadow-md shadow-primary/30 transition-colors hover:bg-[#e6ac00]"
@@ -93,7 +100,11 @@ export function LandingNav() {
           aria-expanded={open}
           aria-controls="mobile-menu"
         >
-          {open ? <CloseIcon className="h-5 w-5" /> : <MenuIcon className="h-5 w-5" />}
+          {open ? (
+            <CloseIcon className="h-5 w-5" />
+          ) : (
+            <MenuIcon className="h-5 w-5" />
+          )}
         </button>
       </nav>
 
