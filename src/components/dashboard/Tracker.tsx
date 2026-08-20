@@ -87,7 +87,7 @@ export function Tracker({ startDate, endDate, activeDates }: TrackerProps) {
   const stateColor: Record<DayState, string> = {
     logged: "bg-[#16A34A]",
     pending: "bg-primary",
-    missed: "bg-[#DC2626]",
+    missed: "bg-[#F87171]",
     upcoming: "bg-[#EEEFF1]",
   };
 
@@ -137,7 +137,7 @@ export function Tracker({ startDate, endDate, activeDates }: TrackerProps) {
             <span className="h-3 w-3 rounded-sm bg-primary" /> Pending
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="h-3 w-3 rounded-sm bg-[#DC2626]" /> Missed
+            <span className="h-3 w-3 rounded-sm bg-[#F87171]" /> Missed
           </span>
           <span className="flex items-center gap-1.5">
             <span className="h-3 w-3 rounded-sm bg-[#EEEFF1]" /> Upcoming
