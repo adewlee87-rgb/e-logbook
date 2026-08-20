@@ -17,13 +17,6 @@ const STATUS_OPTIONS: { label: string; value: EntryStatus | "all" }[] = [
   { label: "Rejected", value: "rejected" },
 ];
 
-function escapeHtml(text: string) {
-  return text
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
-}
-
 import { downloadSingleEntryPDF } from "@/lib/pdf-export";
 import { ProgressSummaryHeader } from "@/components/dashboard/ProgressSummaryHeader";
 

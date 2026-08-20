@@ -1,3 +1,4 @@
+import { getSupervisorContext } from "@/lib/supervisor-data";
 import { ExportPdfButton } from "@/components/ui/ExportPdfButton";
 import type { PDFReportEntry } from "@/lib/pdf-export";
 import { SupervisorShell } from "@/components/supervisor/SupervisorShell";
@@ -8,7 +9,6 @@ import type { EntryType } from "@/components/supervisor/badges";
 import type { EntryStatus } from "@/components/dashboard/StatusBadge";
 import {
   FilterIcon,
-  DownloadIcon,
   CalendarIcon,
   CheckCircleIcon,
   AlertTriangleIcon,
