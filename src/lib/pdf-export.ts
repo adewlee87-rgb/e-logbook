@@ -276,35 +276,6 @@ export function downloadSingleEntryPDF(entry: PDFReportEntry) {
     y += boxHeight + 12;
   }
 
-  // Official SIWES Verification Sign-off Block
-  if (y > pageHeight - 50) {
-    doc.addPage();
-    drawHeaderBanner(doc, "Official Sign-Off");
-    y = 42;
-  }
-
-  doc.setDrawColor(229, 231, 235);
-  doc.line(margin, y, margin + contentWidth, y);
-  y += 10;
-
-  doc.setFontSize(8.5);
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(75, 85, 99);
-  doc.text("INDUSTRY SUPERVISOR SIGN-OFF:", margin, y);
-  doc.text("INSTITUTION SUPERVISOR STAMP:", margin + contentWidth / 2, y);
-
-  y += 14;
-  doc.setDrawColor(156, 163, 175);
-  doc.line(margin, y, margin + 65, y);
-  doc.line(margin + contentWidth / 2, y, margin + contentWidth / 2 + 65, y);
-
-  y += 4.5;
-  doc.setFontSize(8);
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(156, 163, 175);
-  doc.text("Signature & Date", margin, y);
-  doc.text("Stamp & Date", margin + contentWidth / 2, y);
-
   addFooters(doc);
 
   const filename = `${(entry.title || "siwes-log-entry").trim().toLowerCase().replace(/[^a-z0-9]+/g, "-")}.pdf`;
