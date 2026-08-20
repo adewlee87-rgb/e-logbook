@@ -85,7 +85,7 @@ export function Sidebar({
     (item) => item.href !== "/student/settings" && item.label.toLowerCase() !== "settings"
   );
   const settingsItem = items.find(
-    (item) => item.href === "/student/settings" || item.label.toLowerCase() !== "settings"
+    (item) => item.href === "/student/settings" || item.label.toLowerCase() === "settings"
   );
 
   return (
