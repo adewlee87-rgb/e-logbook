@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { ReportCard, type ReportEntry } from "@/components/dashboard/ReportCard";
 import { LogFormModal } from "@/components/dashboard/LogFormModal";
-import { ArrowLeftIcon, EditIcon, LockIcon, SearchIcon, AlertTriangleIcon, BadgeCheckIcon, ClockIcon } from "@/components/ui/icons";
+import { ArrowLeftIcon, EditIcon, LockIcon, SearchIcon, AlertTriangleIcon, BadgeCheckIcon, ClockIcon, DownloadIcon } from "@/components/ui/icons";
 import type { EntryStatus } from "@/components/dashboard/StatusBadge";
 
 const EDIT_WINDOW_MS = 5 * 60 * 60 * 1000;
@@ -24,22 +24,12 @@ function escapeHtml(text: string) {
     .replace(/>/g, "&gt;");
 }
 
-function downloadEntry(entry: ReportEntry) {
-  const html = `<!doctype html><html><head><meta charset="utf-8"><title>${escapeHtml(
-    entry.title
-  )}</title></head><body style="font-family: sans-serif; max-width: 640px; margin: 40px auto;"><h1>${escapeHtml(
-    entry.title
-  )}</h1><p style="white-space: pre-wrap;">${escapeHtml(entry.body)}</p></body></html>`;
-  const blob = new Blob([html], { type: "text/html" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `${entry.title.trim().toLowerCase().replace(/\s+/g, "-")}.html`;
-  a.click();
-  URL.revokeObjectURL(url);
-}
-
+import { downloadSingleEntryPDF } from "@/lib/pdf-export";
 import { ProgressSummaryHeader } from "@/components/dashboard/ProgressSummaryHeader";
+
+function downloadEntry(entry: ReportEntry) {
+  downloadSingleEntryPDF(entry);
+}
 
 export function ReportView({ entries }: { entries: ReportEntry[] }) {
   const searchParams = useSearchParams();
@@ -145,7 +135,7 @@ export function ReportView({ entries }: { entries: ReportEntry[] }) {
 
         {selected && (
           <div className="flex-1 rounded-2xl border border-[#E5E7EB] bg-white p-8">
-            <div className="flex items-center justify-between gap-4">
+            <div className="flex flex-wrap items-center justify-between gap-4">
               <button
                 onClick={() => setSelectedId(null)}
                 className="flex items-center gap-2 text-sm font-medium text-[#1A1A1A] hover:underline"
@@ -154,28 +144,38 @@ export function ReportView({ entries }: { entries: ReportEntry[] }) {
                 Back
               </button>
 
-              {now !== null &&
-                (isEditable(selected) ? (
-                  <button
-                    onClick={() => setEditing(selected)}
-                    className={`inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold transition-colors ${
-                      selected.status === "rejected"
-                        ? "border border-[#DC2626] bg-red-50 text-[#DC2626] hover:bg-red-100"
-                        : "border border-[#E5E7EB] text-[#1A1A1A] hover:bg-gray-50"
-                    }`}
-                  >
-                    <EditIcon className="h-4 w-4" />
-                    {selected.status === "rejected" ? "Edit & Resubmit" : "Edit"}
-                  </button>
-                ) : (
-                  <span
-                    title="Logs can only be edited within 5 hours of creation."
-                    className="inline-flex items-center gap-1.5 text-xs text-[#9CA3AF]"
-                  >
-                    <LockIcon className="h-3.5 w-3.5" />
-                    Editing closed
-                  </span>
-                ))}
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => downloadEntry(selected)}
+                  className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-[#1A1A1A] hover:bg-[#e6ac00] shadow-sm transition-all"
+                >
+                  <DownloadIcon className="h-4 w-4" />
+                  Download PDF
+                </button>
+
+                {now !== null &&
+                  (isEditable(selected) ? (
+                    <button
+                      onClick={() => setEditing(selected)}
+                      className={`inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold transition-colors ${
+                        selected.status === "rejected"
+                          ? "border border-[#DC2626] bg-red-50 text-[#DC2626] hover:bg-red-100"
+                          : "border border-[#E5E7EB] text-[#1A1A1A] hover:bg-gray-50"
+                      }`}
+                    >
+                      <EditIcon className="h-4 w-4" />
+                      {selected.status === "rejected" ? "Edit & Resubmit" : "Edit"}
+                    </button>
+                  ) : (
+                    <span
+                      title="Logs can only be edited within 5 hours of creation."
+                      className="inline-flex items-center gap-1.5 text-xs text-[#9CA3AF]"
+                    >
+                      <LockIcon className="h-3.5 w-3.5" />
+                      Editing closed
+                    </span>
+                  ))}
+              </div>
             </div>
 
             <h2 className="mt-6 text-2xl font-bold text-[#1A1A1A]">{selected.title}</h2>

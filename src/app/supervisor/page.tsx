@@ -29,6 +29,8 @@ function upcomingDeadlines() {
   ];
 }
 
+import { ExportPdfButton } from "@/components/ui/ExportPdfButton";
+import type { PDFReportEntry } from "@/lib/pdf-export";
 import { UserTips, type TipItem } from "@/components/ui/UserTips";
 
 const SUPERVISOR_TIPS: TipItem[] = [
@@ -102,6 +104,18 @@ export default async function SupervisorDashboardPage() {
 
   const deadlines = upcomingDeadlines();
 
+  const pdfEntries: PDFReportEntry[] = pending.map((e) => {
+    const s = studentsById.get(e.student_id as string);
+    return {
+      id: e.id as string,
+      title: `${fullName(s) || "Student"} — Pending Logbook Submission`,
+      body: `Submitted Date: ${e.date || "N/A"}. Created: ${e.created_at || "N/A"}. Status: PENDING REVIEW`,
+      date: (e.date as string) || (e.created_at as string) || "",
+      createdAt: (e.created_at as string) || "",
+      status: "submitted",
+    };
+  });
+
   return (
     <SupervisorShell userId={user.id} user={shell}>
       {/* Header */}
@@ -117,10 +131,11 @@ export default async function SupervisorDashboardPage() {
             <FilterIcon className="h-4 w-4" />
             Filters
           </button>
-          <button className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-[#1A1A1A] hover:bg-[#e6ac00]">
-            <DownloadIcon className="h-4 w-4" />
-            Export Reports
-          </button>
+          <ExportPdfButton
+            entries={pdfEntries}
+            title="Pending Submissions Overview Report"
+            label="Export PDF"
+          />
         </div>
       </div>
 

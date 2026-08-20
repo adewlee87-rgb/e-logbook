@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import { DownloadIcon, StopwatchIcon } from "@/components/ui/icons";
 import type { ReportEntry } from "@/components/dashboard/ReportCard";
+import { downloadSummaryReportPDF } from "@/lib/pdf-export";
 
 export function ProgressSummaryHeader({ entries }: { entries: ReportEntry[] }) {
   const stats = useMemo(() => {
@@ -17,8 +18,12 @@ export function ProgressSummaryHeader({ entries }: { entries: ReportEntry[] }) {
     return { total, approved, submitted, rejected, drafts, approvalRate };
   }, [entries]);
 
-  function handlePrintSummary() {
-    window.print();
+  function handleExportPDF() {
+    if (entries && entries.length > 0) {
+      downloadSummaryReportPDF(entries, "SIWES Logbook Progress Summary");
+    } else {
+      window.print();
+    }
   }
 
   return (
@@ -38,11 +43,11 @@ export function ProgressSummaryHeader({ entries }: { entries: ReportEntry[] }) {
         </div>
 
         <button
-          onClick={handlePrintSummary}
+          onClick={handleExportPDF}
           className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-[#1A1A1A] hover:bg-[#e6ac00] shadow-sm"
         >
           <DownloadIcon className="h-4 w-4" />
-          Print / Export Full Summary
+          Export PDF Summary
         </button>
       </div>
 

@@ -2,7 +2,9 @@ import { getSupervisorContext } from "@/lib/supervisor-data";
 import { SupervisorShell } from "@/components/supervisor/SupervisorShell";
 import { StudentsGrid, type StudentVM } from "@/components/supervisor/StudentsGrid";
 import { fullName, shortStudentId, relativeTime } from "@/lib/supervisor";
-import { FilterIcon, DownloadIcon } from "@/components/ui/icons";
+import { FilterIcon } from "@/components/ui/icons";
+import { ExportPdfButton } from "@/components/ui/ExportPdfButton";
+import type { PDFReportEntry } from "@/lib/pdf-export";
 
 // A full SIWES cycle is roughly 24 weekly logs — used as the progress target.
 const LOG_TARGET = 24;
@@ -74,6 +76,15 @@ export default async function MyStudentsPage({
 
   const activeCount = students.filter((s) => s.active).length;
 
+  const pdfEntries: PDFReportEntry[] = students.map((s) => ({
+    id: s.id,
+    title: `${s.name} (${s.studentId}) — SIWES Student Summary`,
+    body: `Place of Work: ${s.placeOfWork || "N/A"}. Progress Completion: ${s.progress}%. Last Active: ${s.lastActive}`,
+    date: new Date().toISOString(),
+    createdAt: new Date().toISOString(),
+    status: s.active ? "approved" : "submitted",
+  }));
+
   return (
     <SupervisorShell userId={user.id} user={shell}>
       {/* Header */}
@@ -98,10 +109,11 @@ export default async function MyStudentsPage({
             <FilterIcon className="h-4 w-4" />
             Filters
           </button>
-          <button className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-[#1A1A1A] hover:bg-[#e6ac00]">
-            <DownloadIcon className="h-4 w-4" />
-            Export
-          </button>
+          <ExportPdfButton
+            entries={pdfEntries}
+            title="Supervised Students Roster Report"
+            label="Export PDF"
+          />
         </div>
       </div>
 

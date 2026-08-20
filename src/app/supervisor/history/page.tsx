@@ -1,4 +1,5 @@
-import { getSupervisorContext } from "@/lib/supervisor-data";
+import { ExportPdfButton } from "@/components/ui/ExportPdfButton";
+import type { PDFReportEntry } from "@/lib/pdf-export";
 import { SupervisorShell } from "@/components/supervisor/SupervisorShell";
 import { HistoryTable, type HistoryRowVM } from "@/components/supervisor/HistoryTable";
 import { SupervisorStatCard } from "@/components/supervisor/SupervisorStatCard";
@@ -149,6 +150,18 @@ export default async function ReviewHistoryPage({
     now.toISOString()
   )}`;
 
+  const pdfEntries: PDFReportEntry[] = tableEntries.map((e) => {
+    const s = studentsById.get(e.student_id as string);
+    return {
+      id: e.id as string,
+      title: `${fullName(s) || "Student"} — Logbook Entry`,
+      body: `Entry Date: ${e.date || "N/A"}. Created: ${e.created_at || "N/A"}. Status: ${(e.status || "").toUpperCase()}`,
+      date: (e.date as string) || (e.created_at as string) || "",
+      createdAt: (e.created_at as string) || "",
+      status: (e.status as string) || "submitted",
+    };
+  });
+
   return (
     <SupervisorShell userId={user.id} user={shell}>
       {/* Header */}
@@ -170,10 +183,11 @@ export default async function ReviewHistoryPage({
             <FilterIcon className="h-4 w-4" />
             Filters
           </button>
-          <button className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-[#1A1A1A] hover:bg-[#e6ac00]">
-            <DownloadIcon className="h-4 w-4" />
-            Export
-          </button>
+          <ExportPdfButton
+            entries={pdfEntries}
+            title="Supervisor Review History Log"
+            label="Export PDF"
+          />
         </div>
       </div>
 
