@@ -9,14 +9,14 @@ const PROBLEMS = [
   "Logbooks get lost, damaged, or forgotten before assessment.",
   "Entries are written from memory at the end of term.",
   "Supervisors can't verify what actually happened, or when.",
-  "ITF has no reliable oversight across schools and placements.",
+  "Lack of transparent oversight across placements.",
 ];
 
 const SHIFTS = [
   "Entries logged daily, timestamped, and safely stored online.",
   "Photo and file evidence attached to every activity.",
   "Supervisors review and stamp work as it happens.",
-  "ITF officials get verifiable, auditable records at a glance.",
+  "Supervisors get verifiable, auditable records at a glance.",
 ];
 
 const EASE = [0.22, 1, 0.36, 1] as const;

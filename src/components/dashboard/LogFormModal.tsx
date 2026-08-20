@@ -12,6 +12,7 @@ export interface LogFormEntry {
   id: string;
   title: string;
   body: string;
+  status?: string;
 }
 
 interface LogFormModalProps {
@@ -94,7 +95,12 @@ export function LogFormModal({ open, onClose, mode, entry }: LogFormModalProps) 
       }
       const { error: updateError } = await supabase
         .from("logbook_entries")
-        .update({ title: title.trim(), observations: details.trim() })
+        .update({
+          title: title.trim(),
+          observations: details.trim(),
+          status: "submitted",
+          updated_at: new Date().toISOString(),
+        })
         .eq("id", entry.id);
 
       if (updateError) {
@@ -139,11 +145,17 @@ export function LogFormModal({ open, onClose, mode, entry }: LogFormModalProps) 
       <div className="flex items-start justify-between">
         <div>
           <h2 className="text-2xl font-bold text-[#1A1A1A]">
-            {isEdit ? "Edit Log" : "Add New Log"}
+            {isEdit
+              ? entry?.status === "rejected"
+                ? "Edit & Resubmit Log"
+                : "Edit Log"
+              : "Add New Log"}
           </h2>
           <p className="mt-1 text-sm text-[#666]">
             {isEdit
-              ? "Update the details of this entry"
+              ? entry?.status === "rejected"
+                ? "Correct your observations based on supervisor feedback and resubmit for review."
+                : "Update the details of this entry"
               : "Document your internship progress here"}
           </p>
         </div>
@@ -219,7 +231,13 @@ export function LogFormModal({ open, onClose, mode, entry }: LogFormModalProps) 
           disabled={saving}
           className="w-full rounded-full bg-primary py-3 text-sm font-semibold text-[#1A1A1A] hover:bg-[#e6ac00] disabled:opacity-50 sm:flex-1"
         >
-          {saving ? "Saving..." : isEdit ? "Save Changes" : "Save"}
+          {saving
+            ? "Saving..."
+            : entry?.status === "rejected"
+            ? "Resubmit Log"
+            : isEdit
+            ? "Save Changes"
+            : "Save"}
         </button>
       </div>
     </Modal>

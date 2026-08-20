@@ -7,9 +7,14 @@ import { MenuIcon } from "@/components/ui/icons";
 interface DashboardShellProps {
   children: ReactNode;
   navItems?: SidebarNavItem[];
+  profileIncomplete?: boolean;
 }
 
-export function DashboardShell({ children, navItems }: DashboardShellProps) {
+export function DashboardShell({
+  children,
+  navItems,
+  profileIncomplete,
+}: DashboardShellProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
@@ -18,6 +23,7 @@ export function DashboardShell({ children, navItems }: DashboardShellProps) {
         items={navItems}
         open={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
+        profileIncomplete={profileIncomplete}
       />
 
       {sidebarOpen && (

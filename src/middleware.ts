@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { updateSession } from "@/lib/supabase/middleware";
 import { roleHomeRoute, type UserRole } from "@/lib/roles";
 
-const protectedPrefixes = ["/student", "/supervisor", "/itf", "/admin"];
+const protectedPrefixes = ["/student", "/supervisor", "/admin"];
 const authPages = ["/login", "/signup"];
 
 export async function middleware(request: NextRequest) {

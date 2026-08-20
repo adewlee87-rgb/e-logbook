@@ -6,7 +6,6 @@ This is a PITCH DEMO. Prioritize working + visually matching the design over per
 ## Roles
 - student: creates/edits/submits log entries with media evidence
 - supervisor: reviews assigned students' entries, comments, approves/rejects
-- itf_official: views approved entries, adds official comments
 - admin: manages users, assigns supervisors to students, sees platform stats
 
 ## Stack
@@ -20,7 +19,7 @@ This is a PITCH DEMO. Prioritize working + visually matching the design over per
 - Trick: convert matric to internal email for Supabase Auth
   e.g. RUN/CMP/21/0001 -> run-cmp-21-0001@elogbook.app
 - Real matric number stored in profiles table for display
-- After login, read profiles.role and route: student->/student, supervisor->/supervisor, itf_official->/itf, admin->/admin
+- After login, read profiles.role and route: student->/student, supervisor->/supervisor, admin->/admin
 - Middleware protects each route group by role
 
 ## Database tables

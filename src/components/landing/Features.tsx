@@ -80,7 +80,7 @@ export function Features() {
         </h2>
         <p className="mt-4 text-[#666]">
           From the first entry to the final report, Y&apos;ello Log covers the whole
-          SIWES workflow for students, supervisors, and ITF.
+          SIWES workflow for students and supervisors.
         </p>
       </Reveal>
 

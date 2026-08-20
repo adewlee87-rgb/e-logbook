@@ -81,8 +81,7 @@ export function Hero() {
             >
               Y&apos;ello Log digitizes the Universal E-Logbook for Nigerian
               universities. Students record daily training activities with photo
-              evidence, supervisors review and stamp them, and ITF gets
-              verifiable oversight — all in one place.
+              evidence, and supervisors review and stamp them — all in one place.
             </motion.p>
 
             <motion.div

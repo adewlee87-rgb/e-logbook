@@ -29,6 +29,21 @@ function upcomingDeadlines() {
   ];
 }
 
+import { UserTips, type TipItem } from "@/components/ui/UserTips";
+
+const SUPERVISOR_TIPS: TipItem[] = [
+  {
+    id: "sup-1",
+    title: "Timely Entry Reviews",
+    content: "Review pending student submissions daily to keep their industrial training logbooks up to date.",
+  },
+  {
+    id: "sup-2",
+    title: "Action Projection",
+    content: "When returning an entry for revisions, include clear comments so the student knows what to update before resubmitting.",
+  },
+];
+
 export default async function SupervisorDashboardPage() {
   const ctx = await getSupervisorContext();
   if (!ctx) return null;
@@ -110,6 +125,8 @@ export default async function SupervisorDashboardPage() {
       </div>
 
       {/* Stat cards */}
+      <UserTips tips={SUPERVISOR_TIPS} className="mt-6" />
+
       <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
         <SupervisorStatCard
           icon={<UsersIcon className="h-5 w-5" />}

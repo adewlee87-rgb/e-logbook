@@ -21,6 +21,8 @@ function truncate(text: string | null, length: number) {
   return text.length > length ? `${text.slice(0, length).trim()}...` : text;
 }
 
+import { UserTips } from "@/components/ui/UserTips";
+
 export default async function StudentDashboardPage() {
   const supabase = await createClient();
   const {
@@ -83,7 +85,7 @@ export default async function StudentDashboardPage() {
   const fullName = `${profile?.first_name ?? ""} ${profile?.last_name ?? ""}`.trim() || "Student";
 
   return (
-    <DashboardShell>
+    <DashboardShell profileIncomplete={!startDate || !endDate}>
       <Topbar
         title="Dashboard"
         userId={user.id}
@@ -104,6 +106,33 @@ export default async function StudentDashboardPage() {
         <AddNewLogButton alreadyLoggedToday={alreadyLoggedToday} />
       </div>
 
+      <UserTips className="mt-6" />
+
+      {(!startDate || !endDate) && (
+        <div className="mt-6 flex flex-col gap-3 rounded-2xl border-2 border-[#F59E0B] bg-gradient-to-r from-[#FFFBEB] via-[#FEF3D6] to-[#FFFBEB] p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-start gap-3">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#F59E0B] text-white shadow-sm">
+              <StopwatchIcon className="h-6 w-6" />
+            </span>
+            <div>
+              <h4 className="text-base font-extrabold text-[#92400E]">
+                Action Required: Complete Your Profile
+              </h4>
+              <p className="mt-0.5 text-xs text-[#B45309] sm:text-sm">
+                Set your Internship Start &amp; End dates in your profile so the dashboard can compute your live completion progress %, active duration, and tracker calendar.
+              </p>
+            </div>
+          </div>
+
+          <Link
+            href="/student/profile"
+            className="inline-flex shrink-0 items-center justify-center gap-2 rounded-full bg-[#D97706] px-5 py-2.5 text-xs font-extrabold text-white shadow transition-all hover:bg-[#B45309]"
+          >
+            Complete profile Now <span className="animate-bounce inline-block text-sm">→</span>
+          </Link>
+        </div>
+      )}
+
       <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           icon={<BadgeCheckIcon />}
@@ -113,18 +142,26 @@ export default async function StudentDashboardPage() {
         <StatCard
           icon={<StopwatchIcon />}
           label="Internship Duration Status"
-          value={durationWeeks !== null ? `${durationWeeks} weeks` : "—"}
+          value={durationWeeks !== null ? `${durationWeeks} weeks` : "Set Dates"}
           rightSlot={
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-[#DCFCE7] px-3 py-1 text-xs font-medium text-[#16A34A]">
-              <span className="h-1.5 w-1.5 rounded-full bg-[#16A34A]" />
-              {isActive ? "Active" : "Inactive"}
+            <span
+              className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ${isActive
+                ? "bg-[#DCFCE7] text-[#16A34A]"
+                : "bg-[#FEF3D6] text-[#B45309]"
+                }`}
+            >
+              <span
+                className={`h-1.5 w-1.5 rounded-full ${isActive ? "bg-[#16A34A]" : "bg-[#B45309]"
+                  }`}
+              />
+              {isActive ? "Active" : startDate ? "Inactive" : "Pending Profile"}
             </span>
           }
         />
         <StatCard
           icon={<HourglassIcon />}
           label="Completion Progress"
-          value={`${completionProgress}%`}
+          value={startDate && endDate ? `${completionProgress}%` : "0% (Setup)"}
         />
         <StatCard
           icon={<CalendarCheckIcon />}

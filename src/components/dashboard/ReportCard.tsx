@@ -73,10 +73,14 @@ export function ReportCard({
           (canEdit ? (
             <button
               onClick={onEdit}
-              className="inline-flex items-center gap-2 rounded-full border border-[#E5E7EB] px-5 py-2.5 text-sm font-semibold text-[#1A1A1A] hover:bg-gray-50"
+              className={`inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold transition-colors ${
+                entry.status === "rejected"
+                  ? "border border-[#DC2626] bg-red-50 text-[#DC2626] hover:bg-red-100"
+                  : "border border-[#E5E7EB] text-[#1A1A1A] hover:bg-gray-50"
+              }`}
             >
               <EditIcon className="h-4 w-4" />
-              Edit
+              {entry.status === "rejected" ? "Edit & Resubmit" : "Edit"}
             </button>
           ) : (
             <span

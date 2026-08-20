@@ -92,9 +92,9 @@ export function SupervisorShell({
                 <span className="block text-sm font-bold text-[#1A1A1A]">
                   Y&apos;ello Log
                 </span>
-                {/* <span className="block text-[11px] text-[#9CA3AF]">
-                  ITF Official Portal
-                </span> */}
+                <span className="block text-[11px] text-[#9CA3AF]">
+                  Supervisor Portal
+                </span>
               </span>
             </Link>
             <button

@@ -80,6 +80,13 @@ export default async function ReviewHistoryPage({
     };
   });
 
+  // Fetch reviews recorded by this supervisor
+  const { data: allReviewsRaw } = await supabase
+    .from("reviews")
+    .select("id, entry_id, comment, reviewed_at")
+    .eq("reviewer_id", user.id);
+  const allReviews = allReviewsRaw ?? [];
+
   // ---- Stat cards (real month-over-month) -----------------------------
   const now = new Date();
   const startThisMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
@@ -89,30 +96,50 @@ export default async function ReviewHistoryPage({
     new Date((e.updated_at as string) ?? (e.created_at as string)).getTime();
 
   const approvals = entries.filter((e) => e.status === "approved");
-  const corrections = entries.filter((e) => e.status === "rejected");
 
   const approvalsThis = approvals.filter((e) => decidedAt(e) >= startThisMonth).length;
   const approvalsLast = approvals.filter(
     (e) => decidedAt(e) >= startLastMonth && decidedAt(e) < startThisMonth
   ).length;
-  const correctionsThis = corrections.filter((e) => decidedAt(e) >= startThisMonth).length;
-  const correctionsLast = corrections.filter(
-    (e) => decidedAt(e) >= startLastMonth && decidedAt(e) < startThisMonth
+
+  const reviewsThis = allReviews.filter(
+    (r) => new Date(r.reviewed_at as string).getTime() >= startThisMonth
   ).length;
+  const reviewsLast = allReviews.filter(
+    (r) =>
+      new Date(r.reviewed_at as string).getTime() >= startLastMonth &&
+      new Date(r.reviewed_at as string).getTime() < startThisMonth
+  ).length;
+
+  // Corrections sent counts all returned/rejected review actions executed by the supervisor
+  const currentlyRejectedThis = entries.filter(
+    (e) => e.status === "rejected" && decidedAt(e) >= startThisMonth
+  ).length;
+  const currentlyRejectedLast = entries.filter(
+    (e) =>
+      e.status === "rejected" &&
+      decidedAt(e) >= startLastMonth &&
+      decidedAt(e) < startThisMonth
+  ).length;
+
+  const correctionsThis = Math.max(currentlyRejectedThis, reviewsThis - approvalsThis);
+  const correctionsLast = Math.max(currentlyRejectedLast, reviewsLast - approvalsLast);
 
   const approvalDelta = pctDelta(approvalsThis, approvalsLast);
   const correctionDelta = pctDelta(correctionsThis, correctionsLast);
 
-  // Review efficiency = avg days between submission and decision
-  const decided = [...approvals, ...corrections];
+  // Review efficiency = avg days between submission and review action
   const avgDays =
-    decided.length > 0
-      ? decided.reduce((sum, e) => {
-          const created = new Date(e.created_at as string).getTime();
-          const done = decidedAt(e);
-          return sum + Math.max(0, done - created) / DAY_MS;
-        }, 0) / decided.length
-      : null;
+    allReviews.length > 0
+      ? allReviews.reduce((sum, r) => {
+          const entry = entries.find((e) => e.id === r.entry_id);
+          const created = entry
+            ? new Date(entry.created_at as string).getTime()
+            : new Date(r.reviewed_at as string).getTime();
+          const reviewed = new Date(r.reviewed_at as string).getTime();
+          return sum + Math.max(0, reviewed - created) / DAY_MS;
+        }, 0) / allReviews.length
+      : 0.0;
 
   const filteredStudentName = studentFilter
     ? fullName(studentsById.get(studentFilter)) || "this student"
@@ -191,8 +218,8 @@ export default async function ReviewHistoryPage({
         <SupervisorStatCard
           icon={<StopwatchIcon className="h-5 w-5" />}
           label="Review Efficiency"
-          value={avgDays === null ? "—" : avgDays.toFixed(1)}
-          hint={avgDays === null ? "No reviews yet" : "Days avg."}
+          value={avgDays === 0 ? "0.0" : avgDays.toFixed(1)}
+          hint="Days avg."
           highlight
         />
       </div>

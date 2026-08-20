@@ -17,7 +17,7 @@ const FAQS = [
   },
   {
     q: "Is our data safe?",
-    a: "Entries and media are stored securely in the cloud with access controlled by role — students, supervisors, ITF, and admins each see only what they should.",
+    a: "Entries and media are stored securely in the cloud with access controlled by role — students, supervisors, and admins each see only what they should.",
   },
 
   {

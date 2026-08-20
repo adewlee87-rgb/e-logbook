@@ -7,6 +7,7 @@ import { Features } from "@/components/landing/Features";
 import { Roles } from "@/components/landing/Roles";
 import { HowItWorks } from "@/components/landing/HowItWorks";
 import { DashboardPreview } from "@/components/landing/DashboardPreview";
+import { ImageCarousel } from "@/components/landing/ImageCarousel";
 import { Faq } from "@/components/landing/Faq";
 import { FinalCta } from "@/components/landing/FinalCta";
 import { Footer } from "@/components/landing/Footer";
@@ -28,6 +29,7 @@ export default function LandingPage() {
       <Roles />
       <HowItWorks />
       <DashboardPreview />
+      <ImageCarousel />
       <Faq />
       <FinalCta />
       <Footer />

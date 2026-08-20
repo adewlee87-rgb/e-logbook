@@ -1,9 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import {
   DashboardIcon,
@@ -31,16 +30,48 @@ interface SidebarProps {
   items?: SidebarNavItem[];
   open?: boolean;
   onClose?: () => void;
+  profileIncomplete?: boolean;
 }
 
 export function Sidebar({
   items = defaultNavItems,
   open = false,
   onClose,
+  profileIncomplete: propIncomplete,
 }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [loggingOut, setLoggingOut] = useState(false);
+  const [isIncomplete, setIsIncomplete] = useState<boolean>(propIncomplete ?? false);
+
+  useEffect(() => {
+    if (propIncomplete !== undefined) {
+      setIsIncomplete(propIncomplete);
+      return;
+    }
+
+    async function checkProfileStatus() {
+      const supabase = createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data } = await supabase
+        .from("profiles")
+        .select("internship_start_date, internship_end_date")
+        .eq("id", user.id)
+        .single();
+
+      if (!data?.internship_start_date || !data?.internship_end_date) {
+        setIsIncomplete(true);
+      } else {
+        setIsIncomplete(false);
+      }
+    }
+
+    checkProfileStatus();
+  }, [propIncomplete, pathname]);
 
   async function handleLogout() {
     setLoggingOut(true);
@@ -52,9 +83,8 @@ export function Sidebar({
 
   return (
     <aside
-      className={`fixed inset-y-0 left-0 z-40 flex h-screen w-64 shrink-0 -translate-x-full flex-col justify-between border-r border-gray-100 bg-white px-6 py-8 transition-transform duration-200 ease-in-out md:sticky md:top-0 md:translate-x-0 ${
-        open ? "translate-x-0" : ""
-      }`}
+      className={`fixed inset-y-0 left-0 z-40 flex h-screen w-64 shrink-0 -translate-x-full flex-col justify-between border-r border-gray-100 bg-white px-6 py-8 transition-transform duration-200 ease-in-out md:sticky md:top-0 md:translate-x-0 ${open ? "translate-x-0" : ""
+        }`}
     >
       <div>
         <div className="flex items-center justify-between">
@@ -77,17 +107,21 @@ export function Sidebar({
                 key={item.href}
                 href={item.href}
                 onClick={onClose}
-                className={`relative flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-colors ${
-                  isActive
+                className={`relative flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-colors ${isActive
                     ? "bg-[#FEF3D6] text-[#1A1A1A]"
                     : "text-[#666] hover:bg-gray-50"
-                }`}
+                  }`}
               >
                 {isActive && (
                   <span className="absolute -left-6 top-0 h-full w-1.5 rounded-r-full bg-primary" />
                 )}
                 <Icon className="h-5 w-5" />
-                {item.label}
+                <span className="flex-1">{item.label}</span>
+                {item.href === "/student/profile" && isIncomplete && (
+                  <span className="inline-flex items-center gap-1 text-[11px] font-extrabold uppercase tracking-wider text-[#B45309] bg-[#FEF3D6] px-2 py-0.5 rounded-full border border-[#FCD34D] animate-pulse">
+                    <span className="animate-bounce inline-block">←</span> Complete profile
+                  </span>
+                )}
               </Link>
             );
           })}
