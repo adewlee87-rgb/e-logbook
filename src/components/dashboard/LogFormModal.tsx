@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Modal } from "@/components/ui/Modal";
-import { CloseIcon, ImageIcon } from "@/components/ui/icons";
+import { AlertTriangleIcon, CloseIcon, ImageIcon } from "@/components/ui/icons";
 
 const ACCEPTED_TYPES = "image/svg+xml,image/png,image/jpeg,video/mp4";
 
@@ -13,6 +13,7 @@ export interface LogFormEntry {
   title: string;
   body: string;
   status?: string;
+  reviewComment?: string | null;
 }
 
 interface LogFormModalProps {
@@ -163,6 +164,19 @@ export function LogFormModal({ open, onClose, mode, entry }: LogFormModalProps) 
           <CloseIcon className="h-5 w-5" />
         </button>
       </div>
+
+      {/* SUPERVISOR REJECTION FEEDBACK CALLOUT IN EDIT MODAL */}
+      {isEdit && entry?.status === "rejected" && (
+        <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-900">
+          <div className="flex items-center gap-2 font-extrabold text-[#B91C1C]">
+            <AlertTriangleIcon className="h-4 w-4 shrink-0 text-[#DC2626]" />
+            Supervisor Feedback for Revisions:
+          </div>
+          <p className="mt-1.5 italic text-red-900">
+            {entry.reviewComment ? `"${entry.reviewComment}"` : "(No written feedback comment attached.)"}
+          </p>
+        </div>
+      )}
 
       {error && (
         <p className="mt-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-600">{error}</p>

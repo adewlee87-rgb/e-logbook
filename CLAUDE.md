@@ -15,10 +15,10 @@ This is a PITCH DEMO. Prioritize working + visually matching the design over per
 - Deploy target: Vercel
 
 ## Auth pattern (important)
-- Users log in with MATRIC NUMBER + password
+- Users log in with E-mail + password
 - Trick: convert matric to internal email for Supabase Auth
   e.g. RUN/CMP/21/0001 -> run-cmp-21-0001@elogbook.app
-- Real matric number stored in profiles table for display
+- Real E-mail stored in profiles table for display
 - After login, read profiles.role and route: student->/student, supervisor->/supervisor, admin->/admin
 - Middleware protects each route group by role
 

@@ -88,7 +88,12 @@ export function Sidebar({
     >
       <div>
         <div className="flex items-center justify-between">
-          <div className="text-2xl font-bold text-[#1A1A1A]">Y&apos;ello Log</div>
+          <Link href="/student" className="flex items-center gap-2.5">
+            <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-base font-extrabold text-[#1A1A1A]">
+              Y
+            </span>
+            <span className="text-xl font-bold text-[#1A1A1A]">Y&apos;ello Log</span>
+          </Link>
           <button
             onClick={onClose}
             aria-label="Close menu"

@@ -7,6 +7,13 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 export const metadata: Metadata = {
   title: "Y'ello Log — Universal E-Logbook",
   description: "Digital SIWES industrial training logbook",
+  icons: {
+    icon: [
+      { url: "/icon.svg", type: "image/svg+xml" },
+      { url: "/favicon.ico" },
+    ],
+    apple: "/apple-icon.png",
+  },
 };
 
 export default function RootLayout({

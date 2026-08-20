@@ -1,6 +1,13 @@
 import { DownloadIcon, EditIcon, LockIcon, ReportIcon } from "@/components/ui/icons";
 import type { EntryStatus } from "@/components/dashboard/StatusBadge";
 
+export interface ReportReview {
+  id: string;
+  comment: string | null;
+  reviewedAt: string;
+  reviewerRole: string;
+}
+
 export interface ReportEntry {
   id: string;
   title: string;
@@ -9,6 +16,7 @@ export interface ReportEntry {
   createdAt: string;
   imageUrl: string | null;
   status: EntryStatus;
+  review?: ReportReview | null;
 }
 
 function formatRelativeTime(iso: string) {
@@ -44,7 +52,7 @@ export function ReportCard({
   compact = false,
 }: ReportCardProps) {
   return (
-    <div className="rounded-2xl border border-[#E5E7EB] bg-white p-6">
+    <div className="rounded-2xl border border-[#E5E7EB] bg-white p-6 shadow-sm transition-all hover:shadow-md">
       <div className="flex items-start justify-between">
         <span className="flex h-11 w-11 items-center justify-center rounded-full bg-[#FEF3D6] text-primary">
           <ReportIcon className="h-5 w-5" />
@@ -59,6 +67,22 @@ export function ReportCard({
           Read more
         </button>
       </p>
+
+      {/* SUPERVISOR FEEDBACK CALLOUT ON CARD */}
+      {entry.review?.comment && (
+        <div
+          className={`mt-4 rounded-xl border p-3 text-xs leading-relaxed ${
+            entry.status === "approved"
+              ? "border-green-200 bg-green-50/70 text-green-900"
+              : entry.status === "rejected"
+              ? "border-red-200 bg-red-50/80 text-red-900"
+              : "border-gray-200 bg-gray-50 text-[#374151]"
+          }`}
+        >
+          <span className="font-bold">Supervisor Comment: </span>
+          <span className="italic">&ldquo;{truncate(entry.review.comment, 100)}&rdquo;</span>
+        </div>
+      )}
 
       <div className="mt-5 flex flex-wrap items-center gap-3">
         <button

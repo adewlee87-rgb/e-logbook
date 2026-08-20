@@ -41,7 +41,10 @@ export default async function StudentDashboardPage() {
 
   const { data: entries } = await supabase
     .from("logbook_entries")
-    .select("id, date, title, objective, observations, status")
+    .select(
+      `id, date, title, objective, observations, status,
+       reviews(id, comment, reviewed_at, reviewer_role)`
+    )
     .eq("student_id", user.id)
     .order("date", { ascending: false });
 
@@ -75,12 +78,20 @@ export default async function StudentDashboardPage() {
     isActive = today >= start && today <= end;
   }
 
-  const recentActivity: RecentActivityRow[] = allEntries.slice(0, 2).map((e) => ({
-    id: e.id,
-    date: e.date,
-    description: truncate(e.observations ?? e.objective ?? e.title, 40),
-    status: e.status as EntryStatus,
-  }));
+  const recentActivity: RecentActivityRow[] = allEntries.slice(0, 2).map((e) => {
+    const rawReviews = (e.reviews ?? []) as unknown as { comment: string | null; reviewed_at: string }[];
+    const latestReview = [...rawReviews].sort(
+      (a, b) => new Date(b.reviewed_at).getTime() - new Date(a.reviewed_at).getTime()
+    )[0] ?? null;
+
+    return {
+      id: e.id,
+      date: e.date,
+      description: truncate(e.observations ?? e.objective ?? e.title, 40),
+      status: e.status as EntryStatus,
+      reviewComment: latestReview?.comment ?? null,
+    };
+  });
 
   const fullName = `${profile?.first_name ?? ""} ${profile?.last_name ?? ""}`.trim() || "Student";
 

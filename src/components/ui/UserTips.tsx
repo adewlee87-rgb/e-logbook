@@ -55,23 +55,23 @@ export function UserTips({ tips = DEFAULT_STUDENT_TIPS, className = "" }: UserTi
 
   return (
     <div
-      className={`relative overflow-hidden rounded-2xl border border-[#FCD34D]/60 bg-gradient-to-r from-[#FFFBEB] via-[#FEF3D6] to-[#FEF9C3] p-4 sm:p-5 shadow-sm transition-all ${className}`}
+      className={`relative overflow-hidden rounded-2xl border border-white/10 bg-[#1A1A1A] p-4 sm:p-5 shadow-md transition-all ${className}`}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-start gap-3">
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary text-[#1A1A1A] shadow-sm">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#FFC107] text-[#1A1A1A] shadow-sm">
             <HelpCircleIcon className="h-5 w-5" />
           </span>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-xs font-bold uppercase tracking-wider text-[#B45309]">
+              <span className="text-xs font-bold uppercase tracking-wider text-[#FFC107]">
                 User Tip #{index + 1} of {tips.length}
               </span>
             </div>
-            <h4 className="mt-0.5 text-sm font-bold text-[#1A1A1A]">
+            <h4 className="mt-0.5 text-base font-extrabold text-[#FFC107]">
               {currentTip.title}
             </h4>
-            <p className="mt-1 text-xs leading-relaxed text-[#4B5563] sm:text-sm">
+            <p className="mt-1 text-xs leading-relaxed text-[#FDE68A] sm:text-sm">
               {currentTip.content}
             </p>
           </div>
@@ -79,38 +79,38 @@ export function UserTips({ tips = DEFAULT_STUDENT_TIPS, className = "" }: UserTi
 
         <button
           onClick={() => setDismissed(true)}
-          className="rounded-lg p-1 text-[#9CA3AF] transition-colors hover:bg-black/5 hover:text-[#1A1A1A]"
+          className="rounded-lg p-1 text-[#FFC107]/70 transition-colors hover:bg-white/10 hover:text-[#FFC107]"
           aria-label="Dismiss tips"
         >
           <CloseIcon className="h-4 w-4" />
         </button>
       </div>
 
-      <div className="mt-3 flex items-center justify-between border-t border-[#FCD34D]/40 pt-2.5">
-        <div className="flex gap-1">
+      <div className="mt-3 flex items-center justify-between border-t border-white/10 pt-2.5">
+        <div className="flex gap-1.5">
           {tips.map((t, i) => (
             <button
               key={t.id}
               onClick={() => setIndex(i)}
               className={`h-1.5 rounded-full transition-all ${
-                i === index ? "w-5 bg-[#B45309]" : "w-1.5 bg-[#FDE68A]"
+                i === index ? "w-5 bg-[#FFC107]" : "w-1.5 bg-[#FFC107]/30 hover:bg-[#FFC107]/60"
               }`}
               aria-label={`Go to tip ${i + 1}`}
             />
           ))}
         </div>
 
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1.5">
           <button
             onClick={handlePrev}
-            className="flex h-7 w-7 items-center justify-center rounded-lg border border-[#FCD34D]/50 bg-white/80 text-[#1A1A1A] hover:bg-white"
+            className="flex h-7 w-7 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-[#FFC107] transition-all hover:bg-white/15"
             aria-label="Previous tip"
           >
             <ChevronLeftIcon className="h-3.5 w-3.5" />
           </button>
           <button
             onClick={handleNext}
-            className="flex h-7 w-7 items-center justify-center rounded-lg border border-[#FCD34D]/50 bg-white/80 text-[#1A1A1A] hover:bg-white"
+            className="flex h-7 w-7 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-[#FFC107] transition-all hover:bg-white/15"
             aria-label="Next tip"
           >
             <ChevronRightIcon className="h-3.5 w-3.5" />

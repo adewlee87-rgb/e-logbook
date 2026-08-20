@@ -7,9 +7,9 @@ import { Reveal } from "@/components/landing/motion";
 const STEPS = [
   {
     number: "01",
-    title: "Sign up with your matric number",
+    title: "Sign up with your E-mail",
     description:
-      "Create your account using your matric number and set a password — no long forms.",
+      "Create your account using your E-mail and set a password — no long forms.",
   },
   {
     number: "02",

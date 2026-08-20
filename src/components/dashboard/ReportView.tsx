@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { ReportCard, type ReportEntry } from "@/components/dashboard/ReportCard";
 import { LogFormModal } from "@/components/dashboard/LogFormModal";
-import { ArrowLeftIcon, EditIcon, LockIcon, SearchIcon } from "@/components/ui/icons";
+import { ArrowLeftIcon, EditIcon, LockIcon, SearchIcon, AlertTriangleIcon, BadgeCheckIcon, ClockIcon } from "@/components/ui/icons";
 import type { EntryStatus } from "@/components/dashboard/StatusBadge";
 
 const EDIT_WINDOW_MS = 5 * 60 * 60 * 1000;
@@ -189,6 +189,122 @@ export function ReportView({ entries }: { entries: ReportEntry[] }) {
                 className="mt-6 w-full rounded-xl object-cover"
               />
             )}
+
+            {/* SUPERVISOR REVIEW & FEEDBACK PANEL */}
+            {selected.status !== "draft" && (
+              <div
+                className={`mt-8 rounded-2xl border p-6 transition-all ${
+                  selected.status === "approved"
+                    ? "border-green-200 bg-green-50/50"
+                    : selected.status === "rejected"
+                    ? "border-red-200 bg-red-50/60"
+                    : "border-amber-200 bg-amber-50/40"
+                }`}
+              >
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                  <div className="flex items-center gap-3.5">
+                    <span
+                      className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-white shadow-sm ${
+                        selected.status === "approved"
+                          ? "bg-[#16A34A]"
+                          : selected.status === "rejected"
+                          ? "bg-[#DC2626]"
+                          : "bg-[#F59E0B]"
+                      }`}
+                    >
+                      {selected.status === "approved" ? (
+                        <BadgeCheckIcon className="h-6 w-6" />
+                      ) : selected.status === "rejected" ? (
+                        <AlertTriangleIcon className="h-6 w-6" />
+                      ) : (
+                        <ClockIcon className="h-6 w-6" />
+                      )}
+                    </span>
+                    <div>
+                      <h4
+                        className={`text-base font-extrabold ${
+                          selected.status === "approved"
+                            ? "text-[#15803D]"
+                            : selected.status === "rejected"
+                            ? "text-[#B91C1C]"
+                            : "text-[#B45309]"
+                        }`}
+                      >
+                        {selected.status === "approved"
+                          ? "Approved & Stamped by Supervisor"
+                          : selected.status === "rejected"
+                          ? "Returned by Supervisor for Revision"
+                          : "Awaiting Supervisor Review"}
+                      </h4>
+                      <p className="text-xs text-[#666]">
+                        {selected.review?.reviewedAt
+                          ? `Reviewed on ${new Date(selected.review.reviewedAt).toLocaleDateString("en-US", {
+                              month: "short",
+                              day: "numeric",
+                              year: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}`
+                          : selected.status === "submitted"
+                          ? "Your log entry has been submitted and is currently pending review by your supervisor."
+                          : ""}
+                      </p>
+                    </div>
+                  </div>
+
+                  {selected.status === "rejected" && (
+                    <button
+                      onClick={() => setEditing(selected)}
+                      className="inline-flex items-center gap-2 rounded-full bg-[#DC2626] px-5 py-2.5 text-xs font-bold text-white shadow transition-all hover:bg-[#B91C1C]"
+                    >
+                      <EditIcon className="h-4 w-4" />
+                      Edit &amp; Resubmit Log
+                    </button>
+                  )}
+                </div>
+
+                {selected.review?.comment ? (
+                  <div
+                    className={`mt-4 rounded-xl border p-4 shadow-sm ${
+                      selected.status === "approved"
+                        ? "border-green-300 bg-white/90 text-green-950"
+                        : selected.status === "rejected"
+                        ? "border-red-300 bg-white/90 text-red-950"
+                        : "border-gray-200 bg-white text-[#1A1A1A]"
+                    }`}
+                  >
+                    <span
+                      className={`text-xs font-extrabold uppercase tracking-wider ${
+                        selected.status === "approved"
+                          ? "text-green-700"
+                          : selected.status === "rejected"
+                          ? "text-red-700"
+                          : "text-[#666]"
+                      }`}
+                    >
+                      Supervisor Comment &amp; Feedback:
+                    </span>
+                    <p
+                      className={`mt-1.5 text-sm font-semibold italic leading-relaxed ${
+                        selected.status === "approved"
+                          ? "text-green-900"
+                          : selected.status === "rejected"
+                          ? "text-red-900"
+                          : "text-[#1A1A1A]"
+                      }`}
+                    >
+                      &ldquo;{selected.review.comment}&rdquo;
+                    </p>
+                  </div>
+                ) : (
+                  (selected.status === "approved" || selected.status === "rejected") && (
+                    <p className="mt-3 text-xs italic text-[#666]">
+                      (No written comments attached by supervisor for this review.)
+                    </p>
+                  )
+                )}
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -200,7 +316,13 @@ export function ReportView({ entries }: { entries: ReportEntry[] }) {
         mode="edit"
         entry={
           editing
-            ? { id: editing.id, title: editing.title, body: editing.body, status: editing.status }
+            ? {
+                id: editing.id,
+                title: editing.title,
+                body: editing.body,
+                status: editing.status,
+                reviewComment: editing.review?.comment,
+              }
             : undefined
         }
       />

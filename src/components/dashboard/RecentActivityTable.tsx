@@ -7,6 +7,7 @@ export interface RecentActivityRow {
   date: string;
   description: string;
   status: EntryStatus;
+  reviewComment?: string | null;
 }
 
 function formatDate(iso: string) {
@@ -45,7 +46,20 @@ export function RecentActivityTable({ rows }: { rows: RecentActivityRow[] }) {
                   {formatDate(row.date)}
                 </td>
                 <td className="px-6 py-5 text-center text-sm text-[#1A1A1A]">
-                  {row.description}
+                  <div>{row.description}</div>
+                  {row.reviewComment && (
+                    <div
+                      className={`mt-1 text-xs font-medium italic ${
+                        row.status === "approved"
+                          ? "text-[#15803D]"
+                          : row.status === "rejected"
+                          ? "text-[#B91C1C]"
+                          : "text-[#666]"
+                      }`}
+                    >
+                      Feedback: &ldquo;{row.reviewComment.length > 50 ? `${row.reviewComment.slice(0, 50)}...` : row.reviewComment}&rdquo;
+                    </div>
+                  )}
                 </td>
                 <td className="px-6 py-5 text-center">
                   <StatusBadge status={row.status} />
@@ -65,7 +79,7 @@ export function RecentActivityTable({ rows }: { rows: RecentActivityRow[] }) {
                       className="inline-flex items-center gap-2 whitespace-nowrap rounded-full border border-[#E5E7EB] px-4 py-2 text-xs font-semibold text-[#1A1A1A] hover:bg-gray-50"
                     >
                       <EditIcon className="h-4 w-4" />
-                      Edit
+                      {row.status === "rejected" ? "Review Feedback" : "Edit"}
                     </Link>
                   )}
                 </td>

@@ -9,7 +9,7 @@ import { ChevronDownIcon } from "@/components/ui/icons";
 const FAQS = [
   {
     q: "How do students log in?",
-    a: "Students sign in with their matric number and a password — no email required. The matric number is what identifies them across the platform.",
+    a: "Students sign in with their E-mail and a password — no email required. The E-mail is what identifies them across the platform.",
   },
   {
     q: "Can students attach photo evidence?",
