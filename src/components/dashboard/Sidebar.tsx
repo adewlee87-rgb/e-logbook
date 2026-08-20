@@ -81,10 +81,18 @@ export function Sidebar({
     router.refresh();
   }
 
+  const mainItems = items.filter(
+    (item) => item.href !== "/student/settings" && item.label.toLowerCase() !== "settings"
+  );
+  const settingsItem = items.find(
+    (item) => item.href === "/student/settings" || item.label.toLowerCase() !== "settings"
+  );
+
   return (
     <aside
-      className={`fixed inset-y-0 left-0 z-40 flex h-screen w-64 shrink-0 -translate-x-full flex-col justify-between border-r border-gray-100 bg-white px-6 py-8 transition-transform duration-200 ease-in-out md:sticky md:top-0 md:translate-x-0 ${open ? "translate-x-0" : ""
-        }`}
+      className={`fixed inset-y-0 left-0 z-40 flex h-screen w-64 shrink-0 -translate-x-full flex-col justify-between border-r border-gray-100 bg-white px-6 py-8 transition-transform duration-200 ease-in-out md:sticky md:top-0 md:translate-x-0 ${
+        open ? "translate-x-0" : ""
+      }`}
     >
       <div>
         <div className="flex items-center justify-between">
@@ -104,7 +112,7 @@ export function Sidebar({
         </div>
 
         <nav className="mt-10 flex flex-col gap-1.5">
-          {items.map((item) => {
+          {mainItems.map((item) => {
             const isActive = pathname === item.href;
             const Icon = item.icon;
             return (
@@ -112,10 +120,11 @@ export function Sidebar({
                 key={item.href}
                 href={item.href}
                 onClick={onClose}
-                className={`relative flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-colors ${isActive
+                className={`relative flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-colors ${
+                  isActive
                     ? "bg-[#FEF3D6] text-[#1A1A1A]"
                     : "text-[#666] hover:bg-gray-50"
-                  }`}
+                }`}
               >
                 {isActive && (
                   <span className="absolute -left-6 top-0 h-full w-1.5 rounded-r-full bg-primary" />
@@ -123,8 +132,8 @@ export function Sidebar({
                 <Icon className="h-5 w-5" />
                 <span className="flex-1">{item.label}</span>
                 {item.href === "/student/profile" && isIncomplete && (
-                  <span className="inline-flex items-center gap-1 text-[11px] font-extrabold uppercase tracking-wider text-[#B45309] bg-[#FEF3D6] px-2 py-0.5 rounded-full border border-[#FCD34D] animate-pulse">
-                    <span className="animate-bounce inline-block">←</span> Complete profile
+                  <span className="inline-flex items-center gap-1 border border-[#FCD34D] bg-[#FEF3D6] px-2 py-0.5 text-[11px] font-extrabold uppercase tracking-wider text-[#B45309] animate-pulse rounded-full">
+                    <span className="inline-block animate-bounce">←</span> Complete profile
                   </span>
                 )}
               </Link>
@@ -133,14 +142,39 @@ export function Sidebar({
         </nav>
       </div>
 
-      <button
-        onClick={handleLogout}
-        disabled={loggingOut}
-        className="flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium text-[#666] transition-colors hover:bg-gray-50 disabled:opacity-50"
-      >
-        <LogoutIcon className="h-5 w-5" />
-        {loggingOut ? "Logging out..." : "Logout"}
-      </button>
+      <div className="flex flex-col gap-1.5 border-t border-gray-100 pt-4">
+        {settingsItem && (() => {
+          const isActive = pathname === settingsItem.href;
+          const Icon = settingsItem.icon;
+          return (
+            <Link
+              key={settingsItem.href}
+              href={settingsItem.href}
+              onClick={onClose}
+              className={`relative flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-colors ${
+                isActive
+                  ? "bg-[#FEF3D6] text-[#1A1A1A]"
+                  : "text-[#666] hover:bg-gray-50"
+              }`}
+            >
+              {isActive && (
+                <span className="absolute -left-6 top-0 h-full w-1.5 rounded-r-full bg-primary" />
+              )}
+              <Icon className="h-5 w-5" />
+              <span className="flex-1">{settingsItem.label}</span>
+            </Link>
+          );
+        })()}
+
+        <button
+          onClick={handleLogout}
+          disabled={loggingOut}
+          className="flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium text-[#666] transition-colors hover:bg-gray-50 disabled:opacity-50"
+        >
+          <LogoutIcon className="h-5 w-5" />
+          {loggingOut ? "Logging out..." : "Logout"}
+        </button>
+      </div>
     </aside>
   );
 }
