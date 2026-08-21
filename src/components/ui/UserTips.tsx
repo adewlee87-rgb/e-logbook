@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ChevronLeftIcon, ChevronRightIcon, CloseIcon, HelpCircleIcon } from "@/components/ui/icons";
 
 export interface TipItem {
@@ -35,11 +35,27 @@ const DEFAULT_STUDENT_TIPS: TipItem[] = [
 interface UserTipsProps {
   tips?: TipItem[];
   className?: string;
+  autoPlayIntervalMs?: number;
 }
 
-export function UserTips({ tips = DEFAULT_STUDENT_TIPS, className = "" }: UserTipsProps) {
+export function UserTips({
+  tips = DEFAULT_STUDENT_TIPS,
+  className = "",
+  autoPlayIntervalMs = 6000,
+}: UserTipsProps) {
   const [index, setIndex] = useState(0);
   const [dismissed, setDismissed] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
+
+  useEffect(() => {
+    if (dismissed || isPaused || !tips || tips.length <= 1) return;
+
+    const interval = setInterval(() => {
+      setIndex((prev) => (prev + 1) % tips.length);
+    }, autoPlayIntervalMs);
+
+    return () => clearInterval(interval);
+  }, [dismissed, isPaused, tips, autoPlayIntervalMs]);
 
   if (dismissed || !tips || tips.length === 0) return null;
 
@@ -55,8 +71,22 @@ export function UserTips({ tips = DEFAULT_STUDENT_TIPS, className = "" }: UserTi
 
   return (
     <div
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
       className={`relative overflow-hidden rounded-2xl border border-white/10 bg-[#1A1A1A] p-4 sm:p-5 shadow-md transition-all ${className}`}
     >
+      {/* Subtle Auto-scroll Progress Bar */}
+      {!isPaused && (
+        <div
+          key={index}
+          className="absolute top-0 left-0 h-0.5 bg-[#FFC107] animate-[shimmer_6s_linear_infinite]"
+          style={{
+            animation: `dash-draw ${autoPlayIntervalMs}ms linear`,
+            width: "100%",
+          }}
+        />
+      )}
+
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-start gap-3">
           <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#FFC107] text-[#1A1A1A] shadow-sm">
@@ -67,6 +97,11 @@ export function UserTips({ tips = DEFAULT_STUDENT_TIPS, className = "" }: UserTi
               <span className="text-xs font-bold uppercase tracking-wider text-[#FFC107]">
                 User Tip #{index + 1} of {tips.length}
               </span>
+              {isPaused && (
+                <span className="rounded bg-white/10 px-1.5 py-0.5 text-[10px] font-medium text-[#FDE68A]">
+                  Paused
+                </span>
+              )}
             </div>
             <h4 className="mt-0.5 text-base font-extrabold text-[#FFC107]">
               {currentTip.title}

@@ -18,7 +18,7 @@ export function DashboardShell({
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="flex min-h-screen bg-[#F7F7F8]">
+    <div className="flex min-h-screen w-full max-w-full overflow-x-hidden bg-[#F7F7F8]">
       <Sidebar
         items={navItems}
         open={sidebarOpen}
@@ -33,7 +33,7 @@ export function DashboardShell({
         />
       )}
 
-      <div className="flex min-h-screen flex-1 flex-col">
+      <div className="flex min-h-screen flex-1 min-w-0 max-w-full flex-col overflow-x-hidden md:ml-64">
         <div className="flex items-center gap-4 border-b border-gray-100 bg-white px-4 py-3 md:hidden">
           <button
             onClick={() => setSidebarOpen(true)}
@@ -45,7 +45,7 @@ export function DashboardShell({
           <span className="text-lg font-bold text-[#1A1A1A]">Y&apos;ello Log</span>
         </div>
 
-        <main className="flex-1 px-4 py-6 sm:px-6 lg:px-10 lg:py-8">
+        <main className="flex-1 min-w-0 max-w-full px-4 py-6 sm:px-6 lg:px-10 lg:py-8 overflow-x-hidden">
           {children}
         </main>
       </div>

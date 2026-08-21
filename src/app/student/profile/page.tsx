@@ -11,15 +11,45 @@ export default async function ProfilePage() {
 
   if (!user) return null;
 
-  const { data: profile } = await supabase
+  let profile: {
+    first_name?: string | null;
+    last_name?: string | null;
+    username?: string | null;
+    email?: string | null;
+    phone_number?: string | null;
+    place_of_work?: string | null;
+    internship_start_date?: string | null;
+    internship_end_date?: string | null;
+    passport_photo_url?: string | null;
+  } | null = null;
+
+  const { data, error } = await supabase
     .from("profiles")
     .select(
-      "first_name, last_name, username, email, place_of_work, internship_start_date, internship_end_date, passport_photo_url"
+      "first_name, last_name, username, email, phone_number, place_of_work, internship_start_date, internship_end_date, passport_photo_url"
     )
     .eq("id", user.id)
     .single();
 
-  const fullName = `${profile?.first_name ?? ""} ${profile?.last_name ?? ""}`.trim();
+  if (error && error.message?.includes("phone_number")) {
+    const { data: fallbackData } = await supabase
+      .from("profiles")
+      .select(
+        "first_name, last_name, username, email, place_of_work, internship_start_date, internship_end_date, passport_photo_url"
+      )
+      .eq("id", user.id)
+      .single();
+    profile = fallbackData;
+  } else {
+    profile = data;
+  }
+
+  const metaFirstName = (user.user_metadata?.first_name as string) ?? "";
+  const metaLastName = (user.user_metadata?.last_name as string) ?? "";
+
+  const firstName = profile?.first_name || metaFirstName;
+  const lastName = profile?.last_name || metaLastName;
+  const fullName = `${firstName} ${lastName}`.trim();
 
   return (
     <DashboardShell>
@@ -31,6 +61,7 @@ export default async function ProfilePage() {
           fullName={fullName}
           username={profile?.username ?? ""}
           email={profile?.email ?? user.email ?? ""}
+          phoneNumber={profile?.phone_number ?? ""}
           placeOfWork={profile?.place_of_work ?? ""}
           startDate={profile?.internship_start_date ?? null}
           endDate={profile?.internship_end_date ?? null}

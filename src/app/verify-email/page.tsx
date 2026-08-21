@@ -1,30 +1,64 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
 import { AuthLayout } from "@/components/auth/AuthLayout";
 import { Banner } from "@/components/ui/Banner";
 import { Button } from "@/components/ui/Button";
 import { OtpInput } from "@/components/ui/OtpInput";
 import { createClient } from "@/lib/supabase/client";
 
-// This project's "Confirm signup" email template sends an 8-digit OTP.
-const OTP_LENGTH = 8;
+const DEFAULT_OTP_LENGTH = 6;
 
 function VerifyEmailForm() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const email = searchParams.get("email") ?? "";
+  const tokenFromUrl = searchParams.get("token") ?? searchParams.get("code");
 
-  const [digits, setDigits] = useState<string[]>(Array(OTP_LENGTH).fill(""));
+  const [otpLength, setOtpLength] = useState(DEFAULT_OTP_LENGTH);
+  const [digits, setDigits] = useState<string[]>(Array(DEFAULT_OTP_LENGTH).fill(""));
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
 
   const code = digits.join("");
-  const isComplete = code.length === OTP_LENGTH;
+  const isComplete = code.length >= 6;
+
+  // Automatically verify if code/token is present in URL (e.g. user clicked email link)
+  useEffect(() => {
+    if (tokenFromUrl && email) {
+      setLoading(true);
+      const supabase = createClient();
+
+      const verifyFromUrl = async () => {
+        let { error: err } = await supabase.auth.verifyOtp({
+          email,
+          token: tokenFromUrl!,
+          type: "signup",
+        });
+
+        if (err) {
+          const { error: err2 } = await supabase.auth.verifyOtp({
+            email,
+            token: tokenFromUrl!,
+            type: "email",
+          });
+          err = err2;
+        }
+
+        if (err) {
+          setError(err.message);
+          setLoading(false);
+        } else {
+          window.location.href = "/login?verified=1";
+        }
+      };
+
+      verifyFromUrl();
+    }
+  }, [email, tokenFromUrl]);
 
   async function handleContinue() {
     if (!isComplete || !email) return;
@@ -32,25 +66,42 @@ function VerifyEmailForm() {
     setNotice(null);
     setLoading(true);
 
-    const supabase = createClient();
-    const { error: verifyError } = await supabase.auth.verifyOtp({
-      email,
-      token: code,
-      type: "signup",
-    });
+    try {
+      const supabase = createClient();
+      let { error: verifyError } = await supabase.auth.verifyOtp({
+        email,
+        token: code,
+        type: "signup",
+      });
 
-    setLoading(false);
+      if (verifyError) {
+        const { error: err2 } = await supabase.auth.verifyOtp({
+          email,
+          token: code,
+          type: "email",
+        });
+        verifyError = err2;
+      }
 
-    if (verifyError) {
-      setError(verifyError.message);
-      return;
+      if (verifyError) {
+        setError(verifyError.message || "Invalid or expired verification code.");
+        setLoading(false);
+        return;
+      }
+
+      window.location.href = "/login?verified=1";
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Verification error";
+      setError(msg);
+      setLoading(false);
     }
-
-    router.push("/login?verified=1");
   }
 
   async function handleResend() {
-    if (!email) return;
+    if (!email) {
+      setError("Please provide an email address to resend the code.");
+      return;
+    }
     setError(null);
     setNotice(null);
     setResending(true);
@@ -67,14 +118,14 @@ function VerifyEmailForm() {
       setError(resendError.message);
       return;
     }
-    setNotice("A new code has been sent.");
+    setNotice("A new verification code has been sent to your email.");
   }
 
   return (
     <div className="text-center">
       <h1 className="text-3xl font-bold text-[#1A1A1A]">Verify Your Email</h1>
       <p className="mt-1 text-sm text-[#666]">
-        We sent a code to <span className="font-bold text-[#1A1A1A]">{email}</span>
+        We sent a verification code to <span className="font-bold text-[#1A1A1A]">{email || "your email"}</span>
       </p>
 
       {notice && (
@@ -89,16 +140,40 @@ function VerifyEmailForm() {
       )}
 
       <div className="mt-8">
-        <OtpInput length={OTP_LENGTH} value={digits} onChange={setDigits} />
+        <OtpInput length={otpLength} value={digits} onChange={setDigits} />
+        <div className="mt-3 flex items-center justify-center gap-4 text-xs text-[#666]">
+          <span>Code length:</span>
+          <button
+            type="button"
+            onClick={() => {
+              setOtpLength(6);
+              setDigits(Array(6).fill(""));
+            }}
+            className={`font-semibold ${otpLength === 6 ? "text-primary underline" : "text-[#9CA3AF]"}`}
+          >
+            6 Digits
+          </button>
+          <span>|</span>
+          <button
+            type="button"
+            onClick={() => {
+              setOtpLength(8);
+              setDigits(Array(8).fill(""));
+            }}
+            className={`font-semibold ${otpLength === 8 ? "text-primary underline" : "text-[#9CA3AF]"}`}
+          >
+            8 Digits
+          </button>
+        </div>
       </div>
 
       <Button
         className="mt-8"
-        disabled={!isComplete}
+        disabled={!isComplete || loading}
         loading={loading}
         onClick={handleContinue}
       >
-        Continue
+        {loading ? "Verifying..." : "Continue"}
       </Button>
 
       <p className="mt-4 text-sm text-[#666]">

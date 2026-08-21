@@ -9,6 +9,8 @@ import { Button } from "@/components/ui/Button";
 import { PasswordInput } from "@/components/ui/PasswordInput";
 import { createClient } from "@/lib/supabase/client";
 
+import { validatePasswordStrength } from "@/lib/validation";
+
 export default function ResetPasswordPage() {
   const router = useRouter();
   const [password, setPassword] = useState("");
@@ -25,10 +27,12 @@ export default function ResetPasswordPage() {
     setPasswordError(null);
     setConfirmError(null);
 
-    if (password.length < 8) {
-      setPasswordError("Password must be at least 8 characters.");
+    const passVal = validatePasswordStrength(password);
+    if (!passVal.isValid) {
+      setPasswordError(passVal.error ?? "Password does not meet strength requirements.");
       valid = false;
     }
+
     if (confirmPassword !== password) {
       setConfirmError("Passwords do not match.");
       valid = false;

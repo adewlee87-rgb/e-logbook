@@ -7,9 +7,12 @@
   --foreground: #1a1a1a;
 }
 
+html,
 body {
   color: var(--foreground);
   background: var(--background);
+  max-width: 100vw;
+  overflow-x: hidden;
 }
 
 /* ------------------------------------------------------------------ */
@@ -89,6 +92,20 @@ body {
 .bg-dots {
   background-image: radial-gradient(rgba(26, 26, 26, 0.06) 1px, transparent 1px);
   background-size: 22px 22px;
+}
+
+@keyframes ribbonDrop {
+  0% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 1;
+  }
+  80% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translateY(105vh) rotate(720deg);
+    opacity: 0;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -31,6 +31,7 @@ function upcomingDeadlines() {
 import { ExportPdfButton } from "@/components/ui/ExportPdfButton";
 import type { PDFReportEntry } from "@/lib/pdf-export";
 import { UserTips, type TipItem } from "@/components/ui/UserTips";
+import { WelcomeHeader } from "@/components/dashboard/WelcomeHeader";
 
 const SUPERVISOR_TIPS: TipItem[] = [
   {
@@ -119,12 +120,11 @@ export default async function SupervisorDashboardPage() {
     <SupervisorShell userId={user.id} user={shell}>
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-[#1A1A1A] sm:text-3xl">Supervisor Overview</h1>
-          <p className="mt-1 text-sm text-[#666]">
-            Manage and review student submissions for the current term.
-          </p>
-        </div>
+        <WelcomeHeader
+          firstName={shell.name ? shell.name.split(" ")[0] : "Supervisor"}
+          createdAt={user.created_at}
+          userId={user.id}
+        />
         <div className="flex items-center gap-3">
           <button className="inline-flex items-center gap-2 rounded-lg border border-[#E5E7EB] bg-white px-4 py-2.5 text-sm font-medium text-[#1A1A1A] hover:bg-gray-50">
             <FilterIcon className="h-4 w-4" />

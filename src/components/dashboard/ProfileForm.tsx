@@ -11,17 +11,21 @@ interface ProfileFormProps {
   fullName: string;
   username: string;
   email: string;
+  phoneNumber?: string;
   placeOfWork: string;
   startDate: string | null;
   endDate: string | null;
   avatarUrl: string | null;
 }
 
+import { validateDateRange } from "@/lib/validation";
+
 export function ProfileForm({
   userId,
   fullName: initialFullName,
   username: initialUsername,
   email,
+  phoneNumber: initialPhoneNumber,
   placeOfWork: initialPlaceOfWork,
   startDate: initialStartDate,
   endDate: initialEndDate,
@@ -30,6 +34,7 @@ export function ProfileForm({
   const router = useRouter();
   const [fullName, setFullName] = useState(initialFullName);
   const [username, setUsername] = useState(initialUsername);
+  const [phoneNumber, setPhoneNumber] = useState(initialPhoneNumber ?? "");
   const [placeOfWork, setPlaceOfWork] = useState(initialPlaceOfWork);
   const [startDate, setStartDate] = useState(initialStartDate ?? "");
   const [endDate, setEndDate] = useState(initialEndDate ?? "");
@@ -38,25 +43,54 @@ export function ProfileForm({
   const [success, setSuccess] = useState(false);
 
   async function handleSave() {
-    setSaving(true);
     setError(null);
     setSuccess(false);
+
+    if (startDate || endDate) {
+      if (!startDate) {
+        setError("Please select a start date.");
+        return;
+      }
+      if (!endDate) {
+        setError("Please select an end date.");
+        return;
+      }
+      const dateVal = validateDateRange(startDate, endDate);
+      if (!dateVal.isValid) {
+        setError(dateVal.error ?? "Invalid date range.");
+        return;
+      }
+    }
+
+    setSaving(true);
 
     const [firstName, ...rest] = fullName.trim().split(/\s+/);
     const lastName = rest.join(" ");
 
     const supabase = createClient();
-    const { error: updateError } = await supabase
+    const updatePayload: Record<string, unknown> = {
+      first_name: firstName || "",
+      last_name: lastName || "",
+      username: username.trim() || null,
+      phone_number: phoneNumber.trim() || null,
+      place_of_work: placeOfWork.trim() || null,
+      internship_start_date: startDate || null,
+      internship_end_date: endDate || null,
+    };
+
+    let { error: updateError } = await supabase
       .from("profiles")
-      .update({
-        first_name: firstName || "",
-        last_name: lastName || "",
-        username: username.trim() || null,
-        place_of_work: placeOfWork.trim() || null,
-        internship_start_date: startDate || null,
-        internship_end_date: endDate || null,
-      })
+      .update(updatePayload)
       .eq("id", userId);
+
+    if (updateError && updateError.message?.includes("phone_number")) {
+      delete updatePayload.phone_number;
+      const { error: retryError } = await supabase
+        .from("profiles")
+        .update(updatePayload)
+        .eq("id", userId);
+      updateError = retryError;
+    }
 
     setSaving(false);
 
@@ -129,6 +163,16 @@ export function ProfileForm({
           />
         </div>
         <div>
+          <label className="text-sm font-medium text-[#333]">Phone Number</label>
+          <input
+            type="tel"
+            value={phoneNumber}
+            onChange={(e) => setPhoneNumber(e.target.value)}
+            placeholder="e.g. +234 801 234 5678"
+            className="mt-2 w-full rounded-lg border border-[#E5E7EB] bg-white px-4 py-3 text-sm text-[#1A1A1A] focus:border-2 focus:border-black focus:outline-none"
+          />
+        </div>
+        <div className="sm:col-span-2">
           <label className="text-sm font-medium text-[#333]">Internship Placement</label>
           <input
             type="text"

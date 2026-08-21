@@ -22,6 +22,7 @@ function truncate(text: string | null, length: number) {
 }
 
 import { UserTips } from "@/components/ui/UserTips";
+import { WelcomeHeader } from "@/components/dashboard/WelcomeHeader";
 
 export default async function StudentDashboardPage() {
   const supabase = await createClient();
@@ -93,7 +94,11 @@ export default async function StudentDashboardPage() {
     };
   });
 
-  const fullName = `${profile?.first_name ?? ""} ${profile?.last_name ?? ""}`.trim() || "Student";
+  const metaFirstName = (user.user_metadata?.first_name as string) ?? "";
+  const metaLastName = (user.user_metadata?.last_name as string) ?? "";
+  const displayFirstName = profile?.first_name || metaFirstName || "Student";
+  const displayLastName = profile?.last_name || metaLastName;
+  const fullName = `${displayFirstName} ${displayLastName}`.trim();
 
   return (
     <DashboardShell profileIncomplete={!startDate || !endDate}>
@@ -108,12 +113,11 @@ export default async function StudentDashboardPage() {
       />
 
       <div className="mt-8 flex flex-col items-start gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <p className="text-[#666]">Welcome Back,</p>
-          <h2 className="text-3xl font-bold text-[#1A1A1A]">
-            {profile?.first_name ?? "Student"}
-          </h2>
-        </div>
+        <WelcomeHeader
+          firstName={displayFirstName}
+          createdAt={user.created_at}
+          userId={user.id}
+        />
         <AddNewLogButton alreadyLoggedToday={alreadyLoggedToday} />
       </div>
 
@@ -147,7 +151,7 @@ export default async function StudentDashboardPage() {
       <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           icon={<BadgeCheckIcon />}
-          label="Total Submission"
+          label="Total Submissions"
           value={String(totalSubmissions)}
         />
         <StatCard

@@ -22,6 +22,17 @@ export async function middleware(request: NextRequest) {
       return response;
     }
 
+    if (user && !user.email_confirmed_at) {
+      if (isProtected || pathname === "/signup") {
+        const url = request.nextUrl.clone();
+        url.pathname = "/verify-email";
+        if (user.email) {
+          url.searchParams.set("email", user.email);
+        }
+        return NextResponse.redirect(url);
+      }
+    }
+
     if (isProtected || isAuthPage) {
       const { data: profile } = await supabase
         .from("profiles")

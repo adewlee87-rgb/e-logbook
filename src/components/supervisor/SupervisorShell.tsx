@@ -14,6 +14,7 @@ import {
   HelpCircleIcon,
 } from "@/components/ui/icons";
 import { initials } from "@/lib/supervisor";
+import { StudentAvatar } from "@/components/supervisor/StudentAvatar";
 
 const NAV = [
   {
@@ -71,10 +72,10 @@ export function SupervisorShell({
   }
 
   return (
-    <div className="flex min-h-screen bg-[#F7F7F8]">
+    <div className="flex min-h-screen w-full max-w-full overflow-x-hidden bg-[#F7F7F8]">
       {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-40 flex h-screen w-60 shrink-0 -translate-x-full flex-col justify-between border-r border-gray-100 bg-white px-5 py-6 transition-transform duration-200 ease-in-out md:sticky md:top-0 md:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-40 flex h-screen w-60 shrink-0 -translate-x-full flex-col justify-between border-r border-gray-100 bg-white px-5 py-6 transition-transform duration-200 ease-in-out md:translate-x-0 ${
           sidebarOpen ? "translate-x-0" : ""
         }`}
       >
@@ -160,7 +161,7 @@ export function SupervisorShell({
       )}
 
       {/* Main column */}
-      <div className="flex min-h-screen flex-1 flex-col">
+      <div className="flex min-h-screen flex-1 min-w-0 max-w-full flex-col md:ml-60">
         {/* Top bar */}
         <header className="sticky top-0 z-20 border-b border-gray-100 bg-white/90 backdrop-blur">
           <div className="flex items-center gap-4 px-4 py-3 sm:px-6 lg:px-8">
@@ -199,18 +200,7 @@ export function SupervisorShell({
               </span>
               <NotificationsBell userId={userId} />
               <div className="flex items-center gap-2.5">
-                {user.avatarUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={user.avatarUrl}
-                    alt={user.name}
-                    className="h-9 w-9 rounded-full object-cover"
-                  />
-                ) : (
-                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#FEF3D6] text-xs font-semibold text-[#1A1A1A]">
-                    {initials(user.name)}
-                  </div>
-                )}
+                <StudentAvatar name={user.name} url={user.avatarUrl} size={36} />
                 <div className="hidden leading-tight lg:block">
                   <div className="text-sm font-semibold text-[#1A1A1A]">
                     {user.name}
