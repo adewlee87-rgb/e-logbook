@@ -67,10 +67,13 @@ function drawYelloLogLogo(doc: jsPDF, x: number, y: number, size = 16) {
   const strokeWidth = 68 * scale;
   doc.setDrawColor(26, 26, 26);
   doc.setLineWidth(strokeWidth);
-  try {
-    (doc as any).setLineCap("round");
-    (doc as any).setLineJoin("round");
-  } catch {}
+  
+  if (typeof doc.setLineCap === "function") {
+    doc.setLineCap("round");
+  }
+  if (typeof doc.setLineJoin === "function") {
+    doc.setLineJoin("round");
+  }
 
   const xLeft = x + 160 * scale;
   const yTop = y + 150 * scale;
