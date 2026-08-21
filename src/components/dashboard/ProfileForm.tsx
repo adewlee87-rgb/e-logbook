@@ -34,7 +34,7 @@ export function ProfileForm({
   const router = useRouter();
   const [fullName, setFullName] = useState(initialFullName);
   const [username, setUsername] = useState(initialUsername);
-  const [phoneNumber, setPhoneNumber] = useState(initialPhoneNumber ?? "");
+  const [phoneNumber, setPhoneNumber] = useState((initialPhoneNumber ?? "").replace(/\D/g, ""));
   const [placeOfWork, setPlaceOfWork] = useState(initialPlaceOfWork);
   const [startDate, setStartDate] = useState(initialStartDate ?? "");
   const [endDate, setEndDate] = useState(initialEndDate ?? "");
@@ -166,9 +166,34 @@ export function ProfileForm({
           <label className="text-sm font-medium text-[#333]">Phone Number</label>
           <input
             type="tel"
+            inputMode="numeric"
+            pattern="[0-9]*"
             value={phoneNumber}
-            onChange={(e) => setPhoneNumber(e.target.value)}
-            placeholder="e.g. +234 801 234 5678"
+            onKeyDown={(e) => {
+              const allowedKeys = [
+                "Backspace",
+                "Delete",
+                "Tab",
+                "Escape",
+                "Enter",
+                "ArrowLeft",
+                "ArrowRight",
+                "Home",
+                "End",
+              ];
+              if (
+                allowedKeys.includes(e.key) ||
+                (e.ctrlKey && ["a", "c", "v", "x", "z"].includes(e.key.toLowerCase())) ||
+                (e.metaKey && ["a", "c", "v", "x", "z"].includes(e.key.toLowerCase()))
+              ) {
+                return;
+              }
+              if (!/^[0-9]$/.test(e.key)) {
+                e.preventDefault();
+              }
+            }}
+            onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, ""))}
+            placeholder="e.g. 08012345678"
             className="mt-2 w-full rounded-lg border border-[#E5E7EB] bg-white px-4 py-3 text-sm text-[#1A1A1A] focus:border-2 focus:border-black focus:outline-none"
           />
         </div>
