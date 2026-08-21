@@ -13,7 +13,6 @@ import {
   CloseIcon,
   HelpCircleIcon,
 } from "@/components/ui/icons";
-import { initials } from "@/lib/supervisor";
 import { StudentAvatar } from "@/components/supervisor/StudentAvatar";
 
 const NAV = [
