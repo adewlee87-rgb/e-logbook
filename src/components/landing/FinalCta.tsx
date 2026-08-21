@@ -19,9 +19,7 @@ export function FinalCta() {
         <div aria-hidden className="pointer-events-none absolute inset-0">
           <div className="bg-grid absolute inset-0 opacity-40" />
           <div className="shimmer absolute inset-0 opacity-40" />
-          <div
-            className="animate-aurora absolute -right-10 -top-16 h-72 w-72 rounded-full bg-white/30 blur-3xl"
-          />
+          <div className="animate-aurora absolute -right-10 -top-16 h-72 w-72 rounded-full bg-white/30 blur-3xl" />
         </div>
 
         <div className="relative">
@@ -33,7 +31,10 @@ export function FinalCta() {
             verifiable, modern record.
           </p>
           <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-            <motion.div whileHover={reduce ? undefined : { scale: 1.03 }} whileTap={{ scale: 0.98 }}>
+            <motion.div
+              whileHover={reduce ? undefined : { scale: 1.03 }}
+              whileTap={{ scale: 0.98 }}
+            >
               <Link
                 href="/signup"
                 className="block rounded-full bg-[#1A1A1A] px-7 py-3.5 text-center text-sm font-semibold text-white shadow-lg transition-colors hover:bg-black"
@@ -41,14 +42,14 @@ export function FinalCta() {
                 Get started
               </Link>
             </motion.div>
-            <motion.div whileHover={reduce ? undefined : { scale: 1.03 }} whileTap={{ scale: 0.98 }}>
+            {/* <motion.div whileHover={reduce ? undefined : { scale: 1.03 }} whileTap={{ scale: 0.98 }}>
               <Link
                 href="/signup"
                 className="block rounded-full border border-[#1A1A1A]/20 bg-white px-7 py-3.5 text-center text-sm font-semibold text-[#1A1A1A] transition-colors hover:bg-white/70"
               >
                 Request access for your institution
               </Link>
-            </motion.div>
+            </motion.div> */}
           </div>
         </div>
       </motion.div>
