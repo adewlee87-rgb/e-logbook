@@ -20,6 +20,26 @@ interface ProfileFormProps {
 
 import { validateDateRange } from "@/lib/validation";
 
+function formatDDMMYY(dateStr: string): string {
+  if (!dateStr) return "";
+  try {
+    const parts = dateStr.split("-");
+    if (parts.length === 3) {
+      const [year, month, day] = parts;
+      const yy = year.length === 4 ? year.slice(2) : year;
+      return `${day.padStart(2, "0")}/${month.padStart(2, "0")}/${yy}`;
+    }
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr;
+    const dd = String(d.getDate()).padStart(2, "0");
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const yy = String(d.getFullYear()).slice(-2);
+    return `${dd}/${mm}/${yy}`;
+  } catch {
+    return dateStr;
+  }
+}
+
 export function ProfileForm({
   userId,
   fullName: initialFullName,
@@ -209,7 +229,9 @@ export function ProfileForm({
       </div>
 
       <div className="mt-6">
-        <label className="text-sm font-medium text-[#333]">Internship Duration</label>
+        <label className="text-sm font-medium text-[#333]">
+          Internship Duration <span className="text-xs font-normal text-[#666]">(DD/MM/YY)</span>
+        </label>
         <div className="mt-2 flex flex-col items-center gap-3 sm:flex-row sm:max-w-md">
           <input
             type="date"
@@ -225,6 +247,18 @@ export function ProfileForm({
             className="w-full rounded-lg border border-[#E5E7EB] bg-white px-4 py-3 text-sm text-[#1A1A1A] focus:border-2 focus:border-black focus:outline-none"
           />
         </div>
+        {(startDate || endDate) && (
+          <p className="mt-2.5 text-xs font-medium text-[#666]">
+            Format (DD/MM/YY):{" "}
+            <span className="font-bold text-[#1A1A1A]">
+              {startDate ? formatDDMMYY(startDate) : "--/--/--"}
+            </span>{" "}
+            to{" "}
+            <span className="font-bold text-[#1A1A1A]">
+              {endDate ? formatDDMMYY(endDate) : "--/--/--"}
+            </span>
+          </p>
+        )}
       </div>
     </div>
   );
