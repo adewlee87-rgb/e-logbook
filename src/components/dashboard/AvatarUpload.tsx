@@ -65,33 +65,46 @@ export function AvatarUpload({ userId, name, avatarUrl, size = 128, onUploaded }
       });
 
       const canvas = document.createElement("canvas");
-      const cropSize = 300;
-      canvas.width = cropSize;
-      canvas.height = cropSize;
+      const OUTPUT_SIZE = 400; // High quality 400x400 output avatar
+      const VIEWPORT_SIZE = 256; // 256px (h-64 w-64) preview modal viewport
+      canvas.width = OUTPUT_SIZE;
+      canvas.height = OUTPUT_SIZE;
       const ctx = canvas.getContext("2d");
 
       if (ctx) {
         ctx.fillStyle = "#ffffff";
-        ctx.fillRect(0, 0, cropSize, cropSize);
+        ctx.fillRect(0, 0, OUTPUT_SIZE, OUTPUT_SIZE);
 
         ctx.save();
         ctx.beginPath();
-        ctx.arc(cropSize / 2, cropSize / 2, cropSize / 2, 0, Math.PI * 2);
+        ctx.arc(OUTPUT_SIZE / 2, OUTPUT_SIZE / 2, OUTPUT_SIZE / 2, 0, Math.PI * 2);
         ctx.clip();
 
-        // Calculate aspect ratio fill
-        const scale = Math.max(cropSize / image.width, cropSize / image.height) * zoom;
-        const width = image.width * scale;
-        const height = image.height * scale;
-        const x = (cropSize - width) / 2 + position.x;
-        const y = (cropSize - height) / 2 + position.y;
+        const naturalW = image.naturalWidth || image.width;
+        const naturalH = image.naturalHeight || image.height;
 
-        ctx.drawImage(image, x, y, width, height);
+        // Base cover scale inside 256px viewport
+        const baseScale = Math.max(VIEWPORT_SIZE / naturalW, VIEWPORT_SIZE / naturalH);
+        const baseWidth = naturalW * baseScale;
+        const baseHeight = naturalH * baseScale;
+
+        // Coordinates of image top-left relative to 256px viewport
+        const screenX = VIEWPORT_SIZE / 2 + position.x - (baseWidth * zoom) / 2;
+        const screenY = VIEWPORT_SIZE / 2 + position.y - (baseHeight * zoom) / 2;
+
+        // Scale proportionally to 400px output canvas
+        const canvasScale = OUTPUT_SIZE / VIEWPORT_SIZE;
+        const drawW = baseWidth * zoom * canvasScale;
+        const drawH = baseHeight * zoom * canvasScale;
+        const drawX = screenX * canvasScale;
+        const drawY = screenY * canvasScale;
+
+        ctx.drawImage(image, drawX, drawY, drawW, drawH);
         ctx.restore();
       }
 
       const blob = await new Promise<Blob | null>((resolve) =>
-        canvas.toBlob(resolve, "image/jpeg", 0.9)
+        canvas.toBlob(resolve, "image/jpeg", 0.92)
       );
 
       if (!blob) throw new Error("Failed to generate cropped image");
@@ -121,6 +134,7 @@ export function AvatarUpload({ userId, name, avatarUrl, size = 128, onUploaded }
     }
   }
 
+  // Mouse handlers
   const handleMouseDown = (e: React.MouseEvent) => {
     setIsDragging(true);
     setDragStart({ x: e.clientX - position.x, y: e.clientY - position.y });
@@ -138,12 +152,36 @@ export function AvatarUpload({ userId, name, avatarUrl, size = 128, onUploaded }
     setIsDragging(false);
   };
 
+  // Touch handlers for mobile devices
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (e.touches.length === 1) {
+      setIsDragging(true);
+      setDragStart({
+        x: e.touches[0].clientX - position.x,
+        y: e.touches[0].clientY - position.y,
+      });
+    }
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isDragging || e.touches.length !== 1) return;
+    setPosition({
+      x: e.touches[0].clientX - dragStart.x,
+      y: e.touches[0].clientY - dragStart.y,
+    });
+  };
+
+  const handleWheel = (e: React.WheelEvent) => {
+    e.preventDefault();
+    setZoom((prev) => Math.min(3, Math.max(1, prev - e.deltaY * 0.003)));
+  };
+
   return (
     <>
       <div className="relative inline-block" style={{ width: size, height: size }}>
         {preview ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={preview} alt={name} className="h-full w-full rounded-full object-cover" />
+          <img src={preview} alt={name} className="h-full w-full rounded-full object-cover shadow-sm" />
         ) : (
           <div className="flex h-full w-full items-center justify-center rounded-full bg-[#FEF3D6] text-2xl font-semibold text-[#1A1A1A]">
             {initials}
@@ -182,16 +220,20 @@ export function AvatarUpload({ userId, name, avatarUrl, size = 128, onUploaded }
             </div>
 
             <p className="mt-2 text-xs text-[#666]">
-              Drag image to center and use slider to adjust framing.
+              Drag image to center and use slider or scroll wheel to adjust framing.
             </p>
 
-            {/* Circular framing viewport */}
+            {/* Circular framing viewport (256px x 256px) */}
             <div
-              className="relative mx-auto mt-4 h-64 w-64 cursor-grab overflow-hidden rounded-full border-4 border-primary bg-gray-100 shadow-inner active:cursor-grabbing"
+              className="relative mx-auto mt-4 h-64 w-64 cursor-grab overflow-hidden rounded-full border-4 border-primary bg-gray-100 shadow-inner active:cursor-grabbing touch-none"
               onMouseDown={handleMouseDown}
               onMouseMove={handleMouseMove}
               onMouseUp={handleMouseUp}
               onMouseLeave={handleMouseUp}
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleMouseUp}
+              onWheel={handleWheel}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
@@ -218,7 +260,7 @@ export function AvatarUpload({ userId, name, avatarUrl, size = 128, onUploaded }
               <input
                 type="range"
                 min="1"
-                max="2.5"
+                max="3"
                 step="0.05"
                 value={zoom}
                 onChange={(e) => setZoom(parseFloat(e.target.value))}
