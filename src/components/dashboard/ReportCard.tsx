@@ -19,15 +19,21 @@ export interface ReportEntry {
   review?: ReportReview | null;
 }
 
-function formatRelativeTime(iso: string) {
-  const diffMs = Date.now() - new Date(iso).getTime();
-  const hours = Math.floor(diffMs / (1000 * 60 * 60));
-  if (hours < 1) return "Just now";
-  if (hours < 24) return `${hours}hrs ago`;
-  const days = Math.floor(hours / 24);
-  if (days === 1) return "1 day ago";
-  if (days < 7) return `${days} days ago`;
-  return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+function formatTimestamp(iso: string) {
+  if (!iso) return "";
+  try {
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return iso;
+    return d.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+    });
+  } catch {
+    return iso;
+  }
 }
 
 function truncate(text: string, length: number) {
@@ -57,7 +63,7 @@ export function ReportCard({
         <span className="flex h-11 w-11 items-center justify-center rounded-full bg-[#FEF3D6] text-primary">
           <ReportIcon className="h-5 w-5" />
         </span>
-        <span className="text-xs text-[#9CA3AF]">{formatRelativeTime(entry.createdAt)}</span>
+        <span className="text-xs font-medium text-[#666]">{formatTimestamp(entry.createdAt || entry.date)}</span>
       </div>
 
       <h4 className="mt-4 text-lg font-bold text-[#1A1A1A]">{entry.title}</h4>
