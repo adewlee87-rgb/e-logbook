@@ -11,10 +11,33 @@ interface ProfileFormProps {
   fullName: string;
   username: string;
   email: string;
+  phoneNumber?: string;
   placeOfWork: string;
   startDate: string | null;
   endDate: string | null;
   avatarUrl: string | null;
+}
+
+import { validateDateRange } from "@/lib/validation";
+
+function formatDDMMYY(dateStr: string): string {
+  if (!dateStr) return "";
+  try {
+    const parts = dateStr.split("-");
+    if (parts.length === 3) {
+      const [year, month, day] = parts;
+      const yy = year.length === 4 ? year.slice(2) : year;
+      return `${day.padStart(2, "0")}/${month.padStart(2, "0")}/${yy}`;
+    }
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr;
+    const dd = String(d.getDate()).padStart(2, "0");
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const yy = String(d.getFullYear()).slice(-2);
+    return `${dd}/${mm}/${yy}`;
+  } catch {
+    return dateStr;
+  }
 }
 
 export function ProfileForm({
@@ -22,6 +45,7 @@ export function ProfileForm({
   fullName: initialFullName,
   username: initialUsername,
   email,
+  phoneNumber: initialPhoneNumber,
   placeOfWork: initialPlaceOfWork,
   startDate: initialStartDate,
   endDate: initialEndDate,
@@ -30,6 +54,7 @@ export function ProfileForm({
   const router = useRouter();
   const [fullName, setFullName] = useState(initialFullName);
   const [username, setUsername] = useState(initialUsername);
+  const [phoneNumber, setPhoneNumber] = useState((initialPhoneNumber ?? "").replace(/\D/g, ""));
   const [placeOfWork, setPlaceOfWork] = useState(initialPlaceOfWork);
   const [startDate, setStartDate] = useState(initialStartDate ?? "");
   const [endDate, setEndDate] = useState(initialEndDate ?? "");
@@ -38,25 +63,54 @@ export function ProfileForm({
   const [success, setSuccess] = useState(false);
 
   async function handleSave() {
-    setSaving(true);
     setError(null);
     setSuccess(false);
+
+    if (startDate || endDate) {
+      if (!startDate) {
+        setError("Please select a start date.");
+        return;
+      }
+      if (!endDate) {
+        setError("Please select an end date.");
+        return;
+      }
+      const dateVal = validateDateRange(startDate, endDate);
+      if (!dateVal.isValid) {
+        setError(dateVal.error ?? "Invalid date range.");
+        return;
+      }
+    }
+
+    setSaving(true);
 
     const [firstName, ...rest] = fullName.trim().split(/\s+/);
     const lastName = rest.join(" ");
 
     const supabase = createClient();
-    const { error: updateError } = await supabase
+    const updatePayload: Record<string, unknown> = {
+      first_name: firstName || "",
+      last_name: lastName || "",
+      username: username.trim() || null,
+      phone_number: phoneNumber.trim() || null,
+      place_of_work: placeOfWork.trim() || null,
+      internship_start_date: startDate || null,
+      internship_end_date: endDate || null,
+    };
+
+    let { error: updateError } = await supabase
       .from("profiles")
-      .update({
-        first_name: firstName || "",
-        last_name: lastName || "",
-        username: username.trim() || null,
-        place_of_work: placeOfWork.trim() || null,
-        internship_start_date: startDate || null,
-        internship_end_date: endDate || null,
-      })
+      .update(updatePayload)
       .eq("id", userId);
+
+    if (updateError && updateError.message?.includes("phone_number")) {
+      delete updatePayload.phone_number;
+      const { error: retryError } = await supabase
+        .from("profiles")
+        .update(updatePayload)
+        .eq("id", userId);
+      updateError = retryError;
+    }
 
     setSaving(false);
 
@@ -129,6 +183,41 @@ export function ProfileForm({
           />
         </div>
         <div>
+          <label className="text-sm font-medium text-[#333]">Phone Number</label>
+          <input
+            type="tel"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            value={phoneNumber}
+            onKeyDown={(e) => {
+              const allowedKeys = [
+                "Backspace",
+                "Delete",
+                "Tab",
+                "Escape",
+                "Enter",
+                "ArrowLeft",
+                "ArrowRight",
+                "Home",
+                "End",
+              ];
+              if (
+                allowedKeys.includes(e.key) ||
+                (e.ctrlKey && ["a", "c", "v", "x", "z"].includes(e.key.toLowerCase())) ||
+                (e.metaKey && ["a", "c", "v", "x", "z"].includes(e.key.toLowerCase()))
+              ) {
+                return;
+              }
+              if (!/^[0-9]$/.test(e.key)) {
+                e.preventDefault();
+              }
+            }}
+            onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, ""))}
+            placeholder="e.g. 08012345678"
+            className="mt-2 w-full rounded-lg border border-[#E5E7EB] bg-white px-4 py-3 text-sm text-[#1A1A1A] focus:border-2 focus:border-black focus:outline-none"
+          />
+        </div>
+        <div className="sm:col-span-2">
           <label className="text-sm font-medium text-[#333]">Internship Placement</label>
           <input
             type="text"
@@ -140,7 +229,9 @@ export function ProfileForm({
       </div>
 
       <div className="mt-6">
-        <label className="text-sm font-medium text-[#333]">Internship Duration</label>
+        <label className="text-sm font-medium text-[#333]">
+          Internship Duration <span className="text-xs font-normal text-[#666]">(DD/MM/YY)</span>
+        </label>
         <div className="mt-2 flex flex-col items-center gap-3 sm:flex-row sm:max-w-md">
           <input
             type="date"
@@ -156,6 +247,18 @@ export function ProfileForm({
             className="w-full rounded-lg border border-[#E5E7EB] bg-white px-4 py-3 text-sm text-[#1A1A1A] focus:border-2 focus:border-black focus:outline-none"
           />
         </div>
+        {(startDate || endDate) && (
+          <p className="mt-2.5 text-xs font-medium text-[#666]">
+            Format (DD/MM/YY):{" "}
+            <span className="font-bold text-[#1A1A1A]">
+              {startDate ? formatDDMMYY(startDate) : "--/--/--"}
+            </span>{" "}
+            to{" "}
+            <span className="font-bold text-[#1A1A1A]">
+              {endDate ? formatDDMMYY(endDate) : "--/--/--"}
+            </span>
+          </p>
+        )}
       </div>
     </div>
   );

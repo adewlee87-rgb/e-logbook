@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { ReportCard, type ReportEntry } from "@/components/dashboard/ReportCard";
 import { LogFormModal } from "@/components/dashboard/LogFormModal";
-import { ArrowLeftIcon, EditIcon, LockIcon, SearchIcon, AlertTriangleIcon, BadgeCheckIcon, ClockIcon, DownloadIcon } from "@/components/ui/icons";
+import { ArrowLeftIcon, EditIcon, LockIcon, SearchIcon, AlertTriangleIcon, BadgeCheckIcon, ClockIcon, DownloadIcon, ReportIcon } from "@/components/ui/icons";
 import type { EntryStatus } from "@/components/dashboard/StatusBadge";
 
 const EDIT_WINDOW_MS = 5 * 60 * 60 * 1000;
@@ -22,6 +22,38 @@ import { ProgressSummaryHeader } from "@/components/dashboard/ProgressSummaryHea
 
 function downloadEntry(entry: ReportEntry) {
   downloadSingleEntryPDF(entry);
+}
+
+function formatTimestamp(iso: string) {
+  if (!iso) return "";
+  try {
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return iso;
+    return d.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+    });
+  } catch {
+    return iso;
+  }
+}
+
+function formatDate(iso: string) {
+  if (!iso) return "";
+  try {
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return iso;
+    return d.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+  } catch {
+    return iso;
+  }
 }
 
 export function ReportView({ entries }: { entries: ReportEntry[] }) {
@@ -106,9 +138,41 @@ export function ReportView({ entries }: { entries: ReportEntry[] }) {
       <div className={`mt-6 ${selected ? "flex flex-col gap-8 lg:flex-row" : ""}`}>
         <div className={selected ? "flex shrink-0 flex-col gap-4 lg:w-[380px]" : ""}>
           {filtered.length === 0 ? (
-            <div className="rounded-2xl border border-[#E5E7EB] bg-white p-10 text-center text-sm text-[#666]">
-              No reports yet. Create your first log to see it here.
-            </div>
+            entries.length === 0 ? (
+              <div className="rounded-2xl border border-[#E5E7EB] bg-white p-12 text-center shadow-sm">
+                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[#FEF3D6] text-primary">
+                  <ReportIcon className="h-6 w-6" />
+                </div>
+                <h3 className="mt-4 text-base font-bold text-[#1A1A1A]">No reports yet</h3>
+                <p className="mt-1 text-sm text-[#666]">
+                  Create your first log entry to see it listed here.
+                </p>
+              </div>
+            ) : (
+              <div className="rounded-2xl border border-[#E5E7EB] bg-white p-12 text-center shadow-sm">
+                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 text-[#9CA3AF]">
+                  <SearchIcon className="h-6 w-6" />
+                </div>
+                <h3 className="mt-4 text-base font-bold text-[#1A1A1A]">No logs found</h3>
+                <p className="mt-1.5 text-sm text-[#666]">
+                  {query ? (
+                    <>No logs match your search for <span className="font-semibold text-[#1A1A1A]">&ldquo;{query}&rdquo;</span>.</>
+                  ) : (
+                    <>No logs match the selected status filter.</>
+                  )}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setQuery("");
+                    setStatusFilter("all");
+                  }}
+                  className="mt-4 inline-flex items-center gap-2 rounded-full border border-[#E5E7EB] bg-white px-4 py-2 text-xs font-bold text-[#1A1A1A] hover:bg-gray-50 shadow-sm transition-all"
+                >
+                  Clear Search &amp; Filters
+                </button>
+              </div>
+            )
           ) : (
             <div className={selected ? "flex flex-col gap-4" : "grid grid-cols-1 gap-5 md:grid-cols-2"}>
               {filtered.map((entry) => (
@@ -172,6 +236,10 @@ export function ReportView({ entries }: { entries: ReportEntry[] }) {
             </div>
 
             <h2 className="mt-6 text-2xl font-bold text-[#1A1A1A]">{selected.title}</h2>
+            <div className="mt-2 flex flex-wrap items-center gap-4 text-xs text-[#666]">
+              <span>Submitted: <strong className="font-semibold text-[#1A1A1A]">{formatTimestamp(selected.createdAt)}</strong></span>
+              {selected.date && <span>Log Date: <strong className="font-semibold text-[#1A1A1A]">{formatDate(selected.date)}</strong></span>}
+            </div>
             <p className="mt-4 whitespace-pre-wrap text-[#333]">{selected.body}</p>
 
             {selected.imageUrl && (

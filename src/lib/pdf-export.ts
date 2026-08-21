@@ -55,6 +55,38 @@ function formatDateTime(iso: string) {
   }
 }
 
+function drawYelloLogLogo(doc: jsPDF, x: number, y: number, size = 16) {
+  const scale = size / 512;
+  const borderRadius = size * (120 / 512);
+
+  // Background Yellow rounded rectangle (#FFC107)
+  doc.setFillColor(255, 193, 7);
+  doc.roundedRect(x, y, size, size, borderRadius, borderRadius, "F");
+
+  // Dark vector 'Y' stroke (#1A1A1A) from icon.svg
+  const strokeWidth = 68 * scale;
+  doc.setDrawColor(26, 26, 26);
+  doc.setLineWidth(strokeWidth);
+  
+  if (typeof doc.setLineCap === "function") {
+    doc.setLineCap("round");
+  }
+  if (typeof doc.setLineJoin === "function") {
+    doc.setLineJoin("round");
+  }
+
+  const xLeft = x + 160 * scale;
+  const yTop = y + 150 * scale;
+  const xCenter = x + 256 * scale;
+  const yJunction = y + 266 * scale;
+  const xRight = x + 352 * scale;
+  const yBottom = y + 362 * scale;
+
+  doc.line(xLeft, yTop, xCenter, yJunction);
+  doc.line(xRight, yTop, xCenter, yJunction);
+  doc.line(xCenter, yJunction, xCenter, yBottom);
+}
+
 function drawHeaderBanner(doc: jsPDF, titleSuffix = "Official SIWES Entry Report") {
   const pageWidth = doc.internal.pageSize.getWidth();
   const margin = 15;
@@ -62,26 +94,25 @@ function drawHeaderBanner(doc: jsPDF, titleSuffix = "Official SIWES Entry Report
 
   // Header Banner Background (Yellow #FFC107)
   doc.setFillColor(255, 193, 7);
-  doc.rect(margin, 12, contentWidth, 22, "F");
+  doc.roundedRect(margin, 12, contentWidth, 22, 2.5, 2.5, "F");
 
-  // Dark Logo Badge
+  // Dark Logo Badge Frame (#1A1A1A) to make icon.svg pop
   doc.setFillColor(26, 26, 26);
-  doc.roundedRect(margin + 4, 15, 16, 16, 2.5, 2.5, "F");
-  doc.setTextColor(255, 193, 7);
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(15);
-  doc.text("Y", margin + 9, 26);
+  doc.roundedRect(margin + 3, 14, 18, 18, 3, 3, "F");
+
+  // Y'ello Log Brand Vector Logo from icon.svg
+  drawYelloLogLogo(doc, margin + 4, 15, 16);
 
   // App Name & Subtitle
   doc.setTextColor(26, 26, 26);
   doc.setFontSize(16);
   doc.setFont("helvetica", "bold");
-  doc.text("Y'ello Log", margin + 24, 21);
+  doc.text("Y'ello Log", margin + 25, 21);
 
   doc.setFontSize(8.5);
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(75, 85, 99);
-  doc.text(`Student Industrial Work Experience Scheme • ${titleSuffix}`, margin + 24, 28);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(31, 41, 55);
+  doc.text(`Student Industrial Work Experience Scheme • ${titleSuffix}`, margin + 25, 28);
 }
 
 function addFooters(doc: jsPDF) {

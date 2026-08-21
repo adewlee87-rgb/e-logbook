@@ -18,7 +18,7 @@ export function DashboardShell({
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="flex min-h-screen bg-[#F7F7F8]">
+    <div className="flex min-h-screen w-full max-w-full overflow-x-hidden bg-[#F7F7F8]">
       <Sidebar
         items={navItems}
         open={sidebarOpen}

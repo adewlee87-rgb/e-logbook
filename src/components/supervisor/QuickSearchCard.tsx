@@ -13,6 +13,10 @@ export function QuickSearchCard() {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (from && to && new Date(to) < new Date(from)) {
+      alert("End date cannot be earlier than start date.");
+      return;
+    }
     const params = new URLSearchParams();
     if (name.trim()) params.set("q", name.trim());
     if (type !== "all") params.set("type", type);

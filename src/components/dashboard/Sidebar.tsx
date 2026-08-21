@@ -90,7 +90,7 @@ export function Sidebar({
 
   return (
     <aside
-      className={`fixed inset-y-0 left-0 z-40 flex h-screen w-64 shrink-0 -translate-x-full flex-col justify-between border-r border-gray-100 bg-white px-6 py-8 transition-transform duration-200 ease-in-out md:sticky md:top-0 md:translate-x-0 ${
+      className={`fixed inset-y-0 left-0 z-40 flex h-screen w-64 shrink-0 -translate-x-full flex-col justify-between border-r border-gray-100 bg-white px-6 py-8 transition-transform duration-200 ease-in-out md:translate-x-0 ${
         open ? "translate-x-0" : ""
       }`}
     >

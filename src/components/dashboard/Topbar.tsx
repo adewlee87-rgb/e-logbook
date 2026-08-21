@@ -5,6 +5,8 @@ import { useState } from "react";
 import { SearchIcon } from "@/components/ui/icons";
 import { NotificationsBell } from "@/components/dashboard/NotificationsBell";
 
+import { StudentAvatar } from "@/components/supervisor/StudentAvatar";
+
 interface TopbarProps {
   title: string;
   userId: string;
@@ -18,13 +20,6 @@ interface TopbarProps {
 export function Topbar({ title, userId, user }: TopbarProps) {
   const router = useRouter();
   const [query, setQuery] = useState("");
-
-  const initials = user.name
-    .split(" ")
-    .map((part) => part[0])
-    .slice(0, 2)
-    .join("")
-    .toUpperCase();
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault();
@@ -55,18 +50,7 @@ export function Topbar({ title, userId, user }: TopbarProps) {
         <NotificationsBell userId={userId} />
 
         <div className="flex shrink-0 items-center gap-3">
-          {user.avatarUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={user.avatarUrl}
-              alt={user.name}
-              className="h-11 w-11 rounded-full object-cover"
-            />
-          ) : (
-            <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#FEF3D6] text-sm font-semibold text-[#1A1A1A]">
-              {initials}
-            </div>
-          )}
+          <StudentAvatar name={user.name} url={user.avatarUrl} size={44} />
           <div className="hidden leading-tight md:block">
             <div className="text-sm font-semibold text-[#1A1A1A]">{user.name}</div>
             <div className="text-xs text-[#9CA3AF]">{user.email}</div>

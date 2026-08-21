@@ -11,6 +11,8 @@ import { TextInput } from "@/components/ui/TextInput";
 import { MailIcon } from "@/components/ui/icons";
 import { createClient } from "@/lib/supabase/client";
 
+import { validatePasswordStrength } from "@/lib/validation";
+
 export default function SignupPage() {
   const router = useRouter();
   const [firstName, setFirstName] = useState("");
@@ -21,9 +23,17 @@ export default function SignupPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const passwordValidation = validatePasswordStrength(password);
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+
+    if (!passwordValidation.isValid) {
+      setError(passwordValidation.error ?? "Password does not meet strength requirements.");
+      return;
+    }
+
     setLoading(true);
 
     const supabase = createClient();
@@ -74,14 +84,14 @@ export default function SignupPage() {
       <form onSubmit={handleSubmit} className="mt-6 space-y-4">
         <TextInput
           label="First Name"
-          placeholder="e.g Folayan"
+          placeholder="e.g. Chinedu"
           value={firstName}
           onChange={(e) => setFirstName(e.target.value)}
           required
         />
         <TextInput
           label="Last Name"
-          placeholder="e.g Eniola"
+          placeholder="e.g. Abubakar"
           value={lastName}
           onChange={(e) => setLastName(e.target.value)}
           required
@@ -90,26 +100,49 @@ export default function SignupPage() {
           label="Email Address"
           type="email"
           icon={<MailIcon />}
-          placeholder="e.g folayaneniola1@yahoo.com"
+          placeholder="e.g. chinedu.abubakar@email.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
         />
         <TextInput
           label="School Name"
-          placeholder="e.g Obafemi Awolowo University"
+          placeholder="e.g. Obafemi Awolowo University"
           value={school}
           onChange={(e) => setSchool(e.target.value)}
           required
         />
-        <PasswordInput
-          label="Password"
-          placeholder="please enter password here"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          minLength={8}
-          required
-        />
+        <div>
+          <PasswordInput
+            label="Password"
+            placeholder="enter a strong password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+          {password.length > 0 && (
+            <div className="mt-2 text-xs space-y-1 bg-gray-50 p-2.5 rounded-lg border border-gray-200">
+              <p className="font-semibold text-gray-700">Password requirements:</p>
+              <div className="grid grid-cols-2 gap-1 text-gray-600">
+                <span className={passwordValidation.checks.length ? "text-green-600 font-medium" : ""}>
+                  {passwordValidation.checks.length ? "✓" : "•"} At least 8 chars
+                </span>
+                <span className={passwordValidation.checks.uppercase ? "text-green-600 font-medium" : ""}>
+                  {passwordValidation.checks.uppercase ? "✓" : "•"} Uppercase (A-Z)
+                </span>
+                <span className={passwordValidation.checks.lowercase ? "text-green-600 font-medium" : ""}>
+                  {passwordValidation.checks.lowercase ? "✓" : "•"} Lowercase (a-z)
+                </span>
+                <span className={passwordValidation.checks.number ? "text-green-600 font-medium" : ""}>
+                  {passwordValidation.checks.number ? "✓" : "•"} Number (0-9)
+                </span>
+                <span className={`col-span-2 ${passwordValidation.checks.special ? "text-green-600 font-medium" : ""}`}>
+                  {passwordValidation.checks.special ? "✓" : "•"} Special character (!@#$%^&*)
+                </span>
+              </div>
+            </div>
+          )}
+        </div>
         <Button type="submit" loading={loading} className="mt-2">
           Create Account
         </Button>

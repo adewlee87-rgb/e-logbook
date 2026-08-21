@@ -94,7 +94,7 @@ export function DashboardPreview() {
             <motion.div variants={popIn}>
               <StatCard
                 icon={<BadgeCheckIcon />}
-                label="Total Submission"
+                label="Total Submissions"
                 value="24"
               />
             </motion.div>
