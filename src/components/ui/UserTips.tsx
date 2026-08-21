@@ -58,7 +58,7 @@ export function UserTips({ tips = DEFAULT_STUDENT_TIPS, className = "" }: UserTi
       className={`relative overflow-hidden rounded-2xl border border-white/10 bg-[#1A1A1A] p-4 sm:p-5 shadow-md transition-all ${className}`}
     >
       <div className="flex items-start justify-between gap-3">
-        <div className="flex items-start gap-3">
+        <div className="flex min-w-0 flex-1 items-start gap-3">
           <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#FFC107] text-[#1A1A1A] shadow-sm">
             <HelpCircleIcon className="h-5 w-5" />
           </span>

@@ -33,7 +33,7 @@ export function DashboardShell({
         />
       )}
 
-      <div className="flex min-h-screen flex-1 flex-col">
+      <div className="flex min-h-screen min-w-0 flex-1 flex-col">
         <div className="flex items-center gap-4 border-b border-gray-100 bg-white px-4 py-3 md:hidden">
           <button
             onClick={() => setSidebarOpen(true)}
@@ -42,10 +42,12 @@ export function DashboardShell({
           >
             <MenuIcon className="h-6 w-6" />
           </button>
-          <span className="text-lg font-bold text-[#1A1A1A]">Y&apos;ello Log</span>
+          <span className="text-lg font-bold text-[#1A1A1A]">
+            Y&apos;ello Log
+          </span>
         </div>
 
-        <main className="flex-1 px-4 py-6 sm:px-6 lg:px-10 lg:py-8">
+        <main className="min-w-0 flex-1 px-4 py-6 sm:px-6 lg:px-10 lg:py-8">
           {children}
         </main>
       </div>
