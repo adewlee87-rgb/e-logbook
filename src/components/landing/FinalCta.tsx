@@ -41,14 +41,6 @@ export function FinalCta() {
                 Get started
               </Link>
             </motion.div>
-            <motion.div whileHover={reduce ? undefined : { scale: 1.03 }} whileTap={{ scale: 0.98 }}>
-              <Link
-                href="/signup"
-                className="block rounded-full border border-[#1A1A1A]/20 bg-white px-7 py-3.5 text-center text-sm font-semibold text-[#1A1A1A] transition-colors hover:bg-white/70"
-              >
-                Request access for your institution
-              </Link>
-            </motion.div>
           </div>
         </div>
       </motion.div>

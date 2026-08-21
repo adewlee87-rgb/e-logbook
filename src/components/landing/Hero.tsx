@@ -99,17 +99,6 @@ export function Hero() {
                   Get started
                 </Link>
               </motion.div>
-              <motion.div
-                whileHover={reduce ? undefined : { scale: 1.03 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                <Link
-                  href="/signup"
-                  className="block rounded-full border border-[#E5E7EB] bg-white/80 px-7 py-3.5 text-center text-sm font-semibold text-[#1A1A1A] backdrop-blur transition-colors hover:bg-gray-50"
-                >
-                  Request access for your institution
-                </Link>
-              </motion.div>
             </motion.div>
 
             <motion.p variants={item} className="mt-6 text-sm text-[#9CA3AF]">
