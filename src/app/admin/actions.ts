@@ -20,39 +20,39 @@ export async function addSupervisorAction(formData: {
   const firstName = parts[0] ? parts[0].charAt(0).toUpperCase() + parts[0].slice(1) : "Supervisor";
   const lastName = parts[1] ? parts[1].charAt(0).toUpperCase() + parts[1].slice(1) : "";
 
-  // Check if profile with email already exists
-  const { data: existing } = await supabase
-    .from("profiles")
-    .select("id, role")
-    .eq("email", email)
-    .single();
+  const department = formData.department || "Engineering";
 
-  if (existing) {
-    if (existing.role === "supervisor") {
-      return { success: false, error: "A supervisor with this email already exists." };
-    }
-    // Promote user role to supervisor
-    const { error: updateErr } = await supabase
+  // Call RPC function to create auth.users entry and profile simultaneously (satisfying FK constraint)
+  const { error: rpcErr } = await supabase.rpc("create_supervisor_user", {
+    p_email: email,
+    p_first_name: firstName,
+    p_last_name: lastName,
+    p_department: department,
+  });
+
+  if (rpcErr) {
+    // Fallback: If RPC function fails or is missing, check existing profile or update
+    const { data: existing } = await supabase
       .from("profiles")
-      .update({ role: "supervisor", department: formData.department || "Engineering" })
-      .eq("id", existing.id);
+      .select("id, role")
+      .eq("email", email)
+      .single();
 
-    if (updateErr) {
-      return { success: false, error: updateErr.message };
-    }
-  } else {
-    // Insert new supervisor profile with generated UUID for primary key `id`
-    const { error: insertErr } = await supabase.from("profiles").insert({
-      id: crypto.randomUUID(),
-      first_name: firstName,
-      last_name: lastName,
-      email,
-      role: "supervisor",
-      department: formData.department || "Engineering",
-    });
+    if (existing) {
+      if (existing.role === "supervisor") {
+        return { success: false, error: "A supervisor with this email already exists." };
+      }
+      // Promote existing user role to supervisor
+      const { error: updateErr } = await supabase
+        .from("profiles")
+        .update({ role: "supervisor", department })
+        .eq("id", existing.id);
 
-    if (insertErr) {
-      return { success: false, error: insertErr.message };
+      if (updateErr) {
+        return { success: false, error: updateErr.message };
+      }
+    } else {
+      return { success: false, error: rpcErr.message };
     }
   }
 
