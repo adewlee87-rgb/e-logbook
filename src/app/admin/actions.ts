@@ -1,7 +1,6 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
 import { revalidatePath } from "next/cache";
 
 export async function addSupervisorAction(formData: {
@@ -57,29 +56,6 @@ export async function addSupervisorAction(formData: {
     }
   }
 
-  // Trigger Supabase official "Invite User" email template via configured SMTP
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
-  const adminClient = createAdminClient();
-
-  let emailErr: { message: string } | null = null;
-  const { error: inviteErr } = await adminClient.auth.admin.inviteUserByEmail(email, {
-    redirectTo: `${siteUrl}/reset-password`,
-    data: {
-      first_name: firstName,
-      last_name: lastName,
-      role: "supervisor",
-      department: department,
-    },
-  });
-
-  if (inviteErr) {
-    // Fall back to resetPasswordForEmail if user already exists
-    const { error: resetErr } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${siteUrl}/reset-password`,
-    });
-    emailErr = resetErr;
-  }
-
   // Log notification activity for real-time feed
   const {
     data: { user },
@@ -95,42 +71,7 @@ export async function addSupervisorAction(formData: {
 
   revalidatePath("/admin");
   revalidatePath("/admin/supervisors");
-  return {
-    success: true,
-    emailSent: !emailErr,
-    emailError: emailErr ? emailErr.message : null,
-    setupLink: `${siteUrl}/reset-password?email=${encodeURIComponent(email)}`,
-  };
-}
-
-export async function resendInviteAction(email: string) {
-  const supabase = await createClient();
-
-  if (!email || !email.includes("@")) {
-    return { success: false, error: "Please provide a valid email." };
-  }
-
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
-  const adminClient = createAdminClient();
-
-  let emailErr: { message: string } | null = null;
-  const { error: inviteErr } = await adminClient.auth.admin.inviteUserByEmail(email.trim().toLowerCase(), {
-    redirectTo: `${siteUrl}/reset-password`,
-  });
-
-  if (inviteErr) {
-    const { error: resetErr } = await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
-      redirectTo: `${siteUrl}/reset-password`,
-    });
-    emailErr = resetErr;
-  }
-
-  return {
-    success: true,
-    emailSent: !emailErr,
-    emailError: emailErr ? emailErr.message : null,
-    setupLink: `${siteUrl}/reset-password?email=${encodeURIComponent(email.trim().toLowerCase())}`,
-  };
+  return { success: true };
 }
 
 export async function assignSupervisorAction(formData: {
