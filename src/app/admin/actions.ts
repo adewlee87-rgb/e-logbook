@@ -56,6 +56,16 @@ export async function addSupervisorAction(formData: {
     }
   }
 
+  // Send password setup invite email to the new supervisor's inbox
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+  const { error: emailErr } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${siteUrl}/reset-password`,
+  });
+
+  if (emailErr) {
+    console.warn("Password setup email dispatch note:", emailErr.message);
+  }
+
   // Log notification activity for real-time feed
   const {
     data: { user },

@@ -5,7 +5,7 @@ CREATE OR REPLACE FUNCTION public.create_supervisor_user(
   p_email text,
   p_first_name text,
   p_last_name text,
-  p_department text DEFAULT 'Engineering'
+  p_department text DEFAULT 'Information Technology'
 )
 RETURNS uuid AS $$
 DECLARE
