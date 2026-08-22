@@ -19,41 +19,10 @@ const STATUS_OPTIONS: { label: string; value: EntryStatus | "all" }[] = [
 
 import { downloadSingleEntryPDF } from "@/lib/pdf-export";
 import { ProgressSummaryHeader } from "@/components/dashboard/ProgressSummaryHeader";
+import { formatDate, formatDateTime as formatTimestamp } from "@/lib/supervisor";
 
 function downloadEntry(entry: ReportEntry) {
   downloadSingleEntryPDF(entry);
-}
-
-function formatTimestamp(iso: string) {
-  if (!iso) return "";
-  try {
-    const d = new Date(iso);
-    if (isNaN(d.getTime())) return iso;
-    return d.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-      hour: "numeric",
-      minute: "2-digit",
-    });
-  } catch {
-    return iso;
-  }
-}
-
-function formatDate(iso: string) {
-  if (!iso) return "";
-  try {
-    const d = new Date(iso);
-    if (isNaN(d.getTime())) return iso;
-    return d.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
-  } catch {
-    return iso;
-  }
 }
 
 export function ReportView({ entries }: { entries: ReportEntry[] }) {

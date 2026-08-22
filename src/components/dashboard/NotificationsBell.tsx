@@ -3,22 +3,13 @@
 import { useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { BellIcon } from "@/components/ui/icons";
+import { relativeTime } from "@/lib/supervisor";
 
 interface Notification {
   id: string;
   message: string;
   is_read: boolean;
   created_at: string;
-}
-
-function formatRelativeTime(iso: string) {
-  const diffMs = Date.now() - new Date(iso).getTime();
-  const hours = Math.floor(diffMs / (1000 * 60 * 60));
-  if (hours < 1) return "Just now";
-  if (hours < 24) return `${hours}hrs ago`;
-  const days = Math.floor(hours / 24);
-  if (days === 1) return "1 day ago";
-  return `${days} days ago`;
 }
 
 export function NotificationsBell({ userId }: { userId: string }) {
@@ -116,7 +107,7 @@ export function NotificationsBell({ userId }: { userId: string }) {
                   <span className={n.is_read ? "pl-3.5" : ""}>
                     <span className="block">{n.message}</span>
                     <span className="mt-0.5 block text-xs text-[#9CA3AF]">
-                      {formatRelativeTime(n.created_at)}
+                      {relativeTime(n.created_at)}
                     </span>
                   </span>
                 </button>

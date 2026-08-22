@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { StatusBadge, type EntryStatus } from "@/components/dashboard/StatusBadge";
 import { DownloadIcon, EditIcon } from "@/components/ui/icons";
+import { formatDateLong } from "@/lib/supervisor";
 
 export interface RecentActivityRow {
   id: string;
@@ -8,14 +9,6 @@ export interface RecentActivityRow {
   description: string;
   status: EntryStatus;
   reviewComment?: string | null;
-}
-
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString("en-US", {
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-  });
 }
 
 export function RecentActivityTable({ rows }: { rows: RecentActivityRow[] }) {
@@ -43,7 +36,7 @@ export function RecentActivityTable({ rows }: { rows: RecentActivityRow[] }) {
             {rows.map((row, i) => (
               <tr key={row.id} className={i > 0 ? "border-t border-[#E5E7EB]" : ""}>
                 <td className="whitespace-nowrap px-6 py-5 text-center text-sm text-[#1A1A1A]">
-                  {formatDate(row.date)}
+                  {formatDateLong(row.date)}
                 </td>
                 <td className="px-6 py-5 text-center text-sm text-[#1A1A1A]">
                   <div>{row.description}</div>

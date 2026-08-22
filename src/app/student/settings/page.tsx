@@ -14,7 +14,7 @@ export default async function SettingsPage() {
   const { data: profile } = await supabase
     .from("profiles")
     .select(
-      "first_name, last_name, username, email, passport_photo_url, created_at, internship_start_date, internship_end_date, push_notifications_enabled, email_summaries_enabled"
+      "first_name, last_name, username, email, department, passport_photo_url, created_at, internship_start_date, internship_end_date, push_notifications_enabled, email_summaries_enabled"
     )
     .eq("id", user.id)
     .single();
@@ -39,6 +39,7 @@ export default async function SettingsPage() {
           userId={user.id}
           displayName={displayName}
           email={profile?.email ?? user.email ?? ""}
+          department={profile?.department ?? ""}
           avatarUrl={profile?.passport_photo_url ?? null}
           joinedAt={profile?.created_at ?? user.created_at}
           isActive={isActive}

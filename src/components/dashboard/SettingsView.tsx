@@ -12,6 +12,7 @@ interface SettingsViewProps {
   userId: string;
   displayName: string;
   email: string;
+  department?: string;
   avatarUrl: string | null;
   joinedAt: string;
   isActive: boolean;
@@ -118,6 +119,7 @@ export function SettingsView({
   userId,
   displayName,
   email,
+  department = "",
   avatarUrl,
   joinedAt,
   isActive,
@@ -128,9 +130,42 @@ export function SettingsView({
   const [emailEnabled, setEmailEnabled] = useState(emailSummariesEnabled);
   const [passwordModalOpen, setPasswordModalOpen] = useState(false);
 
+  // Department editing state
+  const [dept, setDept] = useState(department);
+  const [editingDept, setEditingDept] = useState(false);
+  const [savingDept, setSavingDept] = useState(false);
+  const [deptMessage, setDeptMessage] = useState<{ text: string; type: "success" | "error" } | null>(null);
+
   async function updatePref(field: "push_notifications_enabled" | "email_summaries_enabled", value: boolean) {
     const supabase = createClient();
     await supabase.from("profiles").update({ [field]: value }).eq("id", userId);
+  }
+
+  async function handleSaveDepartment() {
+    const trimmed = dept.trim();
+    if (!trimmed) {
+      setDeptMessage({ text: "Department name cannot be empty.", type: "error" });
+      return;
+    }
+
+    setSavingDept(true);
+    setDeptMessage(null);
+
+    const supabase = createClient();
+    const { error } = await supabase
+      .from("profiles")
+      .update({ department: trimmed })
+      .eq("id", userId);
+
+    setSavingDept(false);
+
+    if (error) {
+      setDeptMessage({ text: error.message, type: "error" });
+    } else {
+      setDept(trimmed);
+      setDeptMessage({ text: "Department updated successfully!", type: "success" });
+      setEditingDept(false);
+    }
   }
 
   return (
@@ -145,6 +180,9 @@ export function SettingsView({
           </div>
           <h3 className="mt-4 text-lg font-bold text-[#1A1A1A]">{displayName}</h3>
           <p className="text-sm text-[#9CA3AF]">{email}</p>
+          <p className="mt-1 text-xs font-semibold text-[#666]">
+            {dept || "General SIWES"}
+          </p>
 
           <div className="mt-6 space-y-3 text-left text-sm">
             <div className="flex items-center justify-between border-t border-[#E5E7EB] pt-3">
@@ -168,6 +206,60 @@ export function SettingsView({
         </div>
 
         <div className="space-y-6">
+          {/* Academic Information / Department Section */}
+          <div>
+            <h3 className="text-lg font-bold text-[#1A1A1A]">Academic Information</h3>
+            <div className="mt-4 rounded-2xl border border-[#E5E7EB] bg-white p-5">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <p className="font-medium text-[#1A1A1A]">Department / Course of Study</p>
+                  <p className="text-sm text-[#666]">
+                    {dept ? dept : <span className="italic text-[#9CA3AF]">Not set (General SIWES)</span>}
+                  </p>
+                </div>
+                {!editingDept ? (
+                  <button
+                    onClick={() => setEditingDept(true)}
+                    className="rounded-full bg-primary px-5 py-2.5 text-xs font-semibold text-[#1A1A1A] hover:bg-[#e6ac00] transition-colors"
+                  >
+                    Edit Department
+                  </button>
+                ) : (
+                  <div className="flex flex-wrap items-center gap-2">
+                    <input
+                      type="text"
+                      value={dept}
+                      onChange={(e) => setDept(e.target.value)}
+                      placeholder="e.g. Computer Science"
+                      className="rounded-xl border border-gray-300 px-3.5 py-2 text-xs font-medium text-[#1A1A1A] outline-none focus:border-black"
+                    />
+                    <button
+                      onClick={handleSaveDepartment}
+                      disabled={savingDept}
+                      className="rounded-full bg-primary px-4 py-2 text-xs font-bold text-[#1A1A1A] hover:bg-[#e6ac00] disabled:opacity-50"
+                    >
+                      {savingDept ? "Saving..." : "Save"}
+                    </button>
+                    <button
+                      onClick={() => {
+                        setEditingDept(false);
+                        setDept(department);
+                      }}
+                      className="rounded-full border border-gray-200 px-3.5 py-2 text-xs font-semibold text-gray-500 hover:bg-gray-50"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                )}
+              </div>
+              {deptMessage && (
+                <p className={`mt-3 text-xs font-semibold ${deptMessage.type === "error" ? "text-red-600" : "text-green-600"}`}>
+                  {deptMessage.text}
+                </p>
+              )}
+            </div>
+          </div>
+
           <div>
             <h3 className="text-lg font-bold text-[#1A1A1A]">Notification</h3>
             <div className="mt-4 divide-y divide-[#E5E7EB] rounded-2xl border border-[#E5E7EB] bg-white">
