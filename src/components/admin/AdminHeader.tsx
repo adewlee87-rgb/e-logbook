@@ -1,10 +1,14 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
 import { BellIcon, MenuIcon } from "@/components/ui/icons";
+import { NotificationsBell } from "@/components/dashboard/NotificationsBell";
 
 interface AdminHeaderProps {
   adminName?: string;
   adminEmail?: string;
+  adminUserId?: string;
   onMenuToggle?: () => void;
   onRefresh?: () => void;
   isRefreshing?: boolean;
@@ -13,10 +17,24 @@ interface AdminHeaderProps {
 export function AdminHeader({
   adminName = "Admin User",
   adminEmail = "admin@elogbook.app",
+  adminUserId,
   onMenuToggle,
   onRefresh,
   isRefreshing = false,
 }: AdminHeaderProps) {
+  const [currentUserId, setCurrentUserId] = useState<string | undefined>(adminUserId);
+
+  useEffect(() => {
+    if (!currentUserId) {
+      const supabase = createClient();
+      supabase.auth.getUser().then(({ data }) => {
+        if (data?.user) {
+          setCurrentUserId(data.user.id);
+        }
+      });
+    }
+  }, [currentUserId]);
+
   const initial = adminName ? adminName.charAt(0).toUpperCase() : "A";
 
   return (
@@ -63,13 +81,17 @@ export function AdminHeader({
           </button>
         )}
 
-        {/* Notification Bell */}
-        <button
-          className="relative flex h-10 w-10 items-center justify-center rounded-full border border-gray-100 bg-white text-gray-600 shadow-xs transition-colors hover:bg-gray-50 hover:text-gray-900"
-          aria-label="Notifications"
-        >
-          <BellIcon className="h-5 w-5 text-[#4B5563]" />
-        </button>
+        {/* Real-time Notification Bell */}
+        {currentUserId ? (
+          <NotificationsBell userId={currentUserId} />
+        ) : (
+          <button
+            className="relative flex h-10 w-10 items-center justify-center rounded-full border border-gray-100 bg-white text-gray-600 shadow-xs transition-colors hover:bg-gray-50 hover:text-gray-900"
+            aria-label="Notifications"
+          >
+            <BellIcon className="h-5 w-5 text-[#4B5563]" />
+          </button>
+        )}
 
         {/* User Profile Badge */}
         <div className="flex items-center gap-3">

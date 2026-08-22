@@ -113,17 +113,33 @@ export async function assignSupervisorAction(formData: {
   const sName = pMap.get(studentId) || "Student";
   const supName = pMap.get(supervisorId) || "Supervisor";
 
+  // Insert multi-user notifications for Supervisor, Student, and Admin
+  const notifsToInsert = [
+    {
+      user_id: supervisorId,
+      message: `Student ${sName} has been assigned to your supervision.`,
+      is_read: false,
+    },
+    {
+      user_id: studentId,
+      message: `You have been assigned to supervisor ${supName}.`,
+      is_read: false,
+    },
+  ];
+
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   if (user) {
-    await supabase.from("notifications").insert({
+    notifsToInsert.push({
       user_id: user.id,
       message: `${sName} was assigned to ${supName}`,
       is_read: false,
     });
   }
+
+  await supabase.from("notifications").insert(notifsToInsert);
 
   revalidatePath("/admin");
   revalidatePath("/admin/students");
@@ -186,6 +202,29 @@ export async function updateStudentDepartmentAction(formData: {
   if (error) {
     return { success: false, error: error.message };
   }
+
+  // Notify student and admin
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const deptNotifs = [
+    {
+      user_id: studentId,
+      message: `Your department was updated to ${dept}.`,
+      is_read: false,
+    },
+  ];
+
+  if (user) {
+    deptNotifs.push({
+      user_id: user.id,
+      message: `Updated student department to ${dept}.`,
+      is_read: false,
+    });
+  }
+
+  await supabase.from("notifications").insert(deptNotifs);
 
   revalidatePath("/admin");
   revalidatePath("/admin/students");
