@@ -49,9 +49,9 @@ create trigger on_logbook_entry_submitted
   for each row execute procedure public.notify_supervisor_on_entry_submission();
 
 -- Also ensure notifications table has publication for Supabase Realtime
-begin;
-  -- Enable realtime on notifications table if not already active
+do $$
+begin
   alter publication supabase_realtime add table public.notifications;
 exception
-  when duplicate_object then null;
-end;
+  when duplicate_object or undefined_object then null;
+end $$;
