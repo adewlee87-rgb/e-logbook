@@ -143,6 +143,35 @@ export async function assignSupervisorAction(formData: {
   return { success: true };
 }
 
+export async function deleteSupervisorAction(supervisorId: string) {
+  const supabase = await createClient();
+
+  if (!supervisorId) {
+    return { success: false, error: "Invalid supervisor ID." };
+  }
+
+  // Try calling the delete_supervisor_user RPC function first
+  const { error: rpcErr } = await supabase.rpc("delete_supervisor_user", {
+    p_supervisor_id: supervisorId,
+  });
+
+  if (rpcErr) {
+    // Fallback: Unassign students and delete from profiles table
+    await supabase.from("supervisors_students").delete().eq("supervisor_id", supervisorId);
+    const { error: deleteErr } = await supabase.from("profiles").delete().eq("id", supervisorId);
+    if (deleteErr) {
+      return { success: false, error: deleteErr.message };
+    }
+  }
+
+  revalidatePath("/admin");
+  revalidatePath("/admin/supervisors");
+  revalidatePath("/admin/assignments");
+  revalidatePath("/admin/students");
+
+  return { success: true };
+}
+
 export async function updateStudentDepartmentAction(formData: {
   studentId: string;
   department: string;

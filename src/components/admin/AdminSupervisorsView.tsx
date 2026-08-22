@@ -14,7 +14,7 @@ import {
   PlusIcon,
 } from "@/components/ui/icons";
 import type { SupervisorRowData, StudentOption } from "@/lib/admin-supervisors-data";
-import { addSupervisorAction, assignSupervisorAction } from "@/app/admin/actions";
+import { addSupervisorAction, assignSupervisorAction, deleteSupervisorAction } from "@/app/admin/actions";
 import type { FilterOption } from "./AdminStudentsView";
 
 interface AdminSupervisorsViewProps {
@@ -54,6 +54,33 @@ export function AdminSupervisorsView({
   const [selectedSupervisorId, setSelectedSupervisorId] = useState<string>("");
   const [assignLoading, setAssignLoading] = useState(false);
   const [assignError, setAssignError] = useState("");
+
+  // Delete supervisor modal state
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [supervisorToDelete, setSupervisorToDelete] = useState<SupervisorRowData | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
+
+  const handleDeleteSupervisorSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!supervisorToDelete) return;
+
+    setDeleteLoading(true);
+    setDeleteError("");
+
+    const res = await deleteSupervisorAction(supervisorToDelete.id);
+    setDeleteLoading(false);
+
+    if (res.success) {
+      setDeleteModalOpen(false);
+      setSupervisorToDelete(null);
+      startTransition(() => {
+        router.refresh();
+      });
+    } else {
+      setDeleteError(res.error || "Failed to remove supervisor.");
+    }
+  };
 
   // Close filter dropdown on outside click
   useEffect(() => {
@@ -361,12 +388,15 @@ export function AdminSupervisorsView({
                     <th className="px-6 py-3.5 text-xs font-semibold text-[#4B5563]">
                       Status
                     </th>
+                    <th className="px-6 py-3.5 text-xs font-semibold text-[#4B5563] text-right">
+                      Actions
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100 bg-white">
                   {filteredSupervisors.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="px-6 py-12 text-center">
+                      <td colSpan={6} className="px-6 py-12 text-center">
                         <div className="flex flex-col items-center justify-center">
                           <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 text-gray-400">
                             <SupervisorBadgeIcon className="h-6 w-6" />
@@ -439,6 +469,24 @@ export function AdminSupervisorsView({
                               • Inactive
                             </span>
                           )}
+                        </td>
+
+                        {/* Actions */}
+                        <td className="px-6 py-4 text-right">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSupervisorToDelete(row);
+                              setDeleteModalOpen(true);
+                            }}
+                            className="rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-600 transition-colors"
+                            title="Remove supervisor"
+                          >
+                            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M10 11v6M14 11v6" />
+                            </svg>
+                          </button>
                         </td>
                       </tr>
                     ))
@@ -658,6 +706,64 @@ export function AdminSupervisorsView({
                   }`}
                 >
                   {assignLoading ? "Assigning..." : "Assign Supervisor"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Supervisor Confirmation Modal */}
+      {deleteModalOpen && supervisorToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
+          <div className="relative w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+            <button
+              onClick={() => {
+                setDeleteModalOpen(false);
+                setSupervisorToDelete(null);
+              }}
+              className="absolute right-5 top-5 rounded-full p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-700"
+            >
+              <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M18 6L6 18M6 6l12 12" />
+              </svg>
+            </button>
+
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-red-100 text-red-600 mb-4">
+              <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M10 11v6M14 11v6" />
+              </svg>
+            </div>
+
+            <h2 className="text-xl font-bold text-[#111827]">Remove Supervisor</h2>
+            <p className="mt-2 text-sm text-[#6B7280]">
+              Are you sure you want to remove <span className="font-semibold text-gray-900">{supervisorToDelete.name}</span> ({supervisorToDelete.email}) from the platform?
+            </p>
+
+            {deleteError && (
+              <div className="mt-3 rounded-lg bg-red-50 p-2.5 text-xs text-red-600 font-medium">
+                {deleteError}
+              </div>
+            )}
+
+            <form onSubmit={handleDeleteSupervisorSubmit} className="mt-6 flex flex-col gap-3">
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setDeleteModalOpen(false);
+                    setSupervisorToDelete(null);
+                  }}
+                  className="rounded-xl border border-gray-200 bg-white py-3 text-sm font-semibold text-[#374151] hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={deleteLoading}
+                  className="rounded-xl bg-red-600 py-3 text-sm font-bold text-white hover:bg-red-700 transition-colors disabled:opacity-50"
+                >
+                  {deleteLoading ? "Removing..." : "Remove"}
                 </button>
               </div>
             </form>
