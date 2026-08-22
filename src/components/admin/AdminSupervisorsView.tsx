@@ -14,7 +14,12 @@ import {
   PlusIcon,
 } from "@/components/ui/icons";
 import type { SupervisorRowData, StudentOption } from "@/lib/admin-supervisors-data";
-import { addSupervisorAction, assignSupervisorAction, deleteSupervisorAction } from "@/app/admin/actions";
+import {
+  addSupervisorAction,
+  assignSupervisorAction,
+  deleteSupervisorAction,
+  resendInviteAction,
+} from "@/app/admin/actions";
 import type { FilterOption } from "./AdminStudentsView";
 
 interface AdminSupervisorsViewProps {
@@ -46,6 +51,16 @@ export function AdminSupervisorsView({
   const [addDept, setAddDept] = useState("Frontend Development");
   const [addLoading, setAddLoading] = useState(false);
   const [addError, setAddError] = useState("");
+
+  // Invite feedback modal
+  const [inviteSuccessModalOpen, setInviteSuccessModalOpen] = useState(false);
+  const [invitedSupervisorData, setInvitedSupervisorData] = useState<{
+    email: string;
+    emailSent: boolean;
+    emailError?: string | null;
+    setupLink: string;
+  } | null>(null);
+  const [copiedLink, setCopiedLink] = useState(false);
 
   const [assignModalOpen, setAssignModalOpen] = useState(false);
   const [selectedStudentId, setSelectedStudentId] = useState<string>(
@@ -146,8 +161,9 @@ export function AdminSupervisorsView({
     setAddLoading(true);
     setAddError("");
 
+    const targetEmail = addEmail.trim().toLowerCase();
     const res = await addSupervisorAction({
-      email: addEmail,
+      email: targetEmail,
       department: addDept,
     });
 
@@ -155,12 +171,30 @@ export function AdminSupervisorsView({
     if (res.success) {
       setAddEmail("");
       setAddModalOpen(false);
+      setInvitedSupervisorData({
+        email: targetEmail,
+        emailSent: !!res.emailSent,
+        emailError: res.emailError,
+        setupLink: res.setupLink || `${window.location.origin}/reset-password?email=${encodeURIComponent(targetEmail)}`,
+      });
+      setInviteSuccessModalOpen(true);
       startTransition(() => {
         router.refresh();
       });
     } else {
       setAddError(res.error || "Failed to add supervisor.");
     }
+  };
+
+  const handleResendInvite = async (email: string) => {
+    const res = await resendInviteAction(email);
+    setInvitedSupervisorData({
+      email,
+      emailSent: !!res.emailSent,
+      emailError: res.emailError,
+      setupLink: res.setupLink || `${window.location.origin}/reset-password?email=${encodeURIComponent(email)}`,
+    });
+    setInviteSuccessModalOpen(true);
   };
 
   // Assign Supervisor Handler
@@ -473,20 +507,36 @@ export function AdminSupervisorsView({
 
                         {/* Actions */}
                         <td className="px-6 py-4 text-right">
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setSupervisorToDelete(row);
-                              setDeleteModalOpen(true);
-                            }}
-                            className="rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-600 transition-colors"
-                            title="Remove supervisor"
-                          >
-                            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                              <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M10 11v6M14 11v6" />
-                            </svg>
-                          </button>
+                          <div className="flex items-center justify-end gap-1">
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleResendInvite(row.email);
+                              }}
+                              className="rounded-lg p-1.5 text-gray-400 hover:bg-amber-50 hover:text-amber-600 transition-colors"
+                              title="Resend Invite / Copy Setup Link"
+                            >
+                              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                                <polyline points="22,6 12,13 2,6" />
+                              </svg>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSupervisorToDelete(row);
+                                setDeleteModalOpen(true);
+                              }}
+                              className="rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-600 transition-colors"
+                              title="Remove supervisor"
+                            >
+                              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M10 11v6M14 11v6" />
+                              </svg>
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))
@@ -767,6 +817,90 @@ export function AdminSupervisorsView({
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Invite Feedback & Setup Link Modal */}
+      {inviteSuccessModalOpen && invitedSupervisorData && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
+          <div className="relative w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+            <button
+              onClick={() => {
+                setInviteSuccessModalOpen(false);
+                setInvitedSupervisorData(null);
+                setCopiedLink(false);
+              }}
+              className="absolute right-5 top-5 rounded-full p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-700"
+            >
+              <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M18 6L6 18M6 6l12 12" />
+              </svg>
+            </button>
+
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#FEF9E6] text-[#D97706] mb-4">
+              <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                <polyline points="22 4 12 14.01 9 11.01" />
+              </svg>
+            </div>
+
+            <h2 className="text-xl font-bold text-[#111827]">Supervisor Invited!</h2>
+            <p className="mt-1 text-xs text-[#6B7280]">
+              Account created for <span className="font-semibold text-gray-900">{invitedSupervisorData.email}</span>.
+            </p>
+
+            {/* Email Dispatch Note */}
+            <div className="mt-4 rounded-xl border border-gray-100 bg-[#F9FAFB] p-3 text-xs text-gray-600 flex flex-col gap-1">
+              <span className="font-semibold text-gray-800 flex items-center gap-1.5">
+                {invitedSupervisorData.emailSent ? "✉️ Email Trigger Sent" : "⚠️ Email Status Note"}
+              </span>
+              <p>
+                {invitedSupervisorData.emailSent
+                  ? `Supabase dispatched an email invite to ${invitedSupervisorData.email}.`
+                  : invitedSupervisorData.emailError || "Supabase default email provider rate limit reached or custom SMTP is not set up."}
+              </p>
+            </div>
+
+            {/* Direct Password Link */}
+            <div className="mt-4">
+              <label className="block text-xs font-semibold text-[#374151] mb-1.5">
+                Direct Password Setup Link (Copy & Send to Supervisor)
+              </label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  readOnly
+                  value={invitedSupervisorData.setupLink}
+                  className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5 text-xs font-mono text-gray-700 outline-none select-all"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigator.clipboard.writeText(invitedSupervisorData.setupLink);
+                    setCopiedLink(true);
+                    setTimeout(() => setCopiedLink(false), 2500);
+                  }}
+                  className="shrink-0 rounded-xl bg-[#FFC107] px-3.5 py-2.5 text-xs font-bold text-[#111827] hover:bg-[#e5ac00] transition-colors"
+                >
+                  {copiedLink ? "Copied!" : "Copy"}
+                </button>
+              </div>
+            </div>
+
+            <div className="mt-6 flex justify-end">
+              <button
+                type="button"
+                onClick={() => {
+                  setInviteSuccessModalOpen(false);
+                  setInvitedSupervisorData(null);
+                  setCopiedLink(false);
+                }}
+                className="w-full rounded-xl bg-[#111827] py-3 text-sm font-bold text-white hover:bg-gray-800 transition-colors"
+              >
+                Done
+              </button>
+            </div>
           </div>
         </div>
       )}

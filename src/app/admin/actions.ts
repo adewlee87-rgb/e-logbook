@@ -62,10 +62,6 @@ export async function addSupervisorAction(formData: {
     redirectTo: `${siteUrl}/reset-password`,
   });
 
-  if (emailErr) {
-    console.warn("Password setup email dispatch note:", emailErr.message);
-  }
-
   // Log notification activity for real-time feed
   const {
     data: { user },
@@ -81,7 +77,32 @@ export async function addSupervisorAction(formData: {
 
   revalidatePath("/admin");
   revalidatePath("/admin/supervisors");
-  return { success: true };
+  return {
+    success: true,
+    emailSent: !emailErr,
+    emailError: emailErr ? emailErr.message : null,
+    setupLink: `${siteUrl}/reset-password?email=${encodeURIComponent(email)}`,
+  };
+}
+
+export async function resendInviteAction(email: string) {
+  const supabase = await createClient();
+
+  if (!email || !email.includes("@")) {
+    return { success: false, error: "Please provide a valid email." };
+  }
+
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+  const { error: emailErr } = await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
+    redirectTo: `${siteUrl}/reset-password`,
+  });
+
+  return {
+    success: true,
+    emailSent: !emailErr,
+    emailError: emailErr ? emailErr.message : null,
+    setupLink: `${siteUrl}/reset-password?email=${encodeURIComponent(email.trim().toLowerCase())}`,
+  };
 }
 
 export async function assignSupervisorAction(formData: {
