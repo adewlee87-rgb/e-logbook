@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { revalidatePath } from "next/cache";
 
 export async function addSupervisorAction(formData: {
@@ -56,11 +57,28 @@ export async function addSupervisorAction(formData: {
     }
   }
 
-  // Send password setup invite email to the new supervisor's inbox
+  // Trigger Supabase official "Invite User" email template via configured SMTP
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
-  const { error: emailErr } = await supabase.auth.resetPasswordForEmail(email, {
+  const adminClient = createAdminClient();
+
+  let emailErr: { message: string } | null = null;
+  const { error: inviteErr } = await adminClient.auth.admin.inviteUserByEmail(email, {
     redirectTo: `${siteUrl}/reset-password`,
+    data: {
+      first_name: firstName,
+      last_name: lastName,
+      role: "supervisor",
+      department: department,
+    },
   });
+
+  if (inviteErr) {
+    // Fall back to resetPasswordForEmail if user already exists
+    const { error: resetErr } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${siteUrl}/reset-password`,
+    });
+    emailErr = resetErr;
+  }
 
   // Log notification activity for real-time feed
   const {
@@ -93,9 +111,19 @@ export async function resendInviteAction(email: string) {
   }
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
-  const { error: emailErr } = await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
+  const adminClient = createAdminClient();
+
+  let emailErr: { message: string } | null = null;
+  const { error: inviteErr } = await adminClient.auth.admin.inviteUserByEmail(email.trim().toLowerCase(), {
     redirectTo: `${siteUrl}/reset-password`,
   });
+
+  if (inviteErr) {
+    const { error: resetErr } = await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
+      redirectTo: `${siteUrl}/reset-password`,
+    });
+    emailErr = resetErr;
+  }
 
   return {
     success: true,
