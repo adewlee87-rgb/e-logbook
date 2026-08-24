@@ -12,6 +12,7 @@ import {
   LogoutIcon,
   CloseIcon,
 } from "@/components/ui/icons";
+import { LogoutConfirmModal } from "@/components/ui/LogoutConfirmModal";
 
 export interface AdminNavItem {
   label: string;
@@ -36,6 +37,7 @@ export function AdminSidebar({ open = false, onClose, assignmentsCount }: AdminS
   const pathname = usePathname();
   const router = useRouter();
   const [loggingOut, setLoggingOut] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [badgeVal, setBadgeVal] = useState<number | null>(assignmentsCount ?? null);
 
   useEffect(() => {
@@ -157,7 +159,7 @@ export function AdminSidebar({ open = false, onClose, assignmentsCount }: AdminS
       {/* Logout button */}
       <div className="flex flex-col pt-4">
         <button
-          onClick={handleLogout}
+          onClick={() => setShowLogoutModal(true)}
           disabled={loggingOut}
           className="flex items-center gap-3.5 rounded-xl px-4 py-3 text-sm font-medium text-[#6B7280] transition-colors hover:bg-gray-50 hover:text-[#111827] disabled:opacity-50"
         >
@@ -165,6 +167,12 @@ export function AdminSidebar({ open = false, onClose, assignmentsCount }: AdminS
           <span>{loggingOut ? "Logging out..." : "Logout"}</span>
         </button>
       </div>
+
+      <LogoutConfirmModal
+        isOpen={showLogoutModal}
+        onClose={() => setShowLogoutModal(false)}
+        onConfirm={handleLogout}
+      />
     </aside>
   );
 }

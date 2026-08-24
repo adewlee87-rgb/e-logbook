@@ -13,6 +13,8 @@ import {
   CloseIcon,
 } from "@/components/ui/icons";
 
+import { LogoutConfirmModal } from "@/components/ui/LogoutConfirmModal";
+
 export interface SidebarNavItem {
   label: string;
   href: string;
@@ -42,6 +44,7 @@ export function Sidebar({
   const pathname = usePathname();
   const router = useRouter();
   const [loggingOut, setLoggingOut] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [isIncomplete, setIsIncomplete] = useState<boolean>(
     propIncomplete ?? false,
   );
@@ -177,7 +180,7 @@ export function Sidebar({
           })()}
 
         <button
-          onClick={handleLogout}
+          onClick={() => setShowLogoutModal(true)}
           disabled={loggingOut}
           className="flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium text-[#666] transition-colors hover:bg-gray-50 disabled:opacity-50"
         >
@@ -185,6 +188,12 @@ export function Sidebar({
           {loggingOut ? "Logging out..." : "Logout"}
         </button>
       </div>
+
+      <LogoutConfirmModal
+        isOpen={showLogoutModal}
+        onClose={() => setShowLogoutModal(false)}
+        onConfirm={handleLogout}
+      />
     </aside>
   );
 }
