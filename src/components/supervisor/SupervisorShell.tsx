@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { ReactNode, useState } from "react";
+import { ReactNode, useState, useRef, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { NotificationsBell } from "@/components/dashboard/NotificationsBell";
 import {
@@ -14,6 +14,7 @@ import {
   HelpCircleIcon,
 } from "@/components/ui/icons";
 import { StudentAvatar } from "@/components/supervisor/StudentAvatar";
+import { LogoutConfirmModal } from "@/components/ui/LogoutConfirmModal";
 
 const NAV = [
   {
@@ -48,7 +49,20 @@ export function SupervisorShell({
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [headerMenuOpen, setHeaderMenuOpen] = useState(false);
   const [query, setQuery] = useState("");
+  const headerMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (headerMenuRef.current && !headerMenuRef.current.contains(e.target as Node)) {
+        setHeaderMenuOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const onSettings = pathname.startsWith("/supervisor/settings");
 
@@ -142,7 +156,7 @@ export function SupervisorShell({
             Settings
           </Link>
           <button
-            onClick={handleLogout}
+            onClick={() => setShowLogoutModal(true)}
             disabled={loggingOut}
             className="flex items-center gap-3 rounded-lg px-4 py-2.5 text-sm font-medium text-[#666] transition-colors hover:bg-gray-50 disabled:opacity-50"
           >
@@ -151,6 +165,12 @@ export function SupervisorShell({
           </button>
         </div>
       </aside>
+
+      <LogoutConfirmModal
+        isOpen={showLogoutModal}
+        onClose={() => setShowLogoutModal(false)}
+        onConfirm={handleLogout}
+      />
 
       {sidebarOpen && (
         <div
@@ -198,13 +218,54 @@ export function SupervisorShell({
                 <HelpCircleIcon className="h-5 w-5" />
               </span>
               <NotificationsBell userId={userId} />
-              <div className="flex items-center gap-2.5">
-                <StudentAvatar name={user.name} url={user.avatarUrl} size={36} />
-                <div className="hidden leading-tight lg:block">
-                  <div className="text-sm font-semibold text-[#1A1A1A]">
-                    {user.name}
+              
+              {/* Header Profile Dropdown */}
+              <div className="relative" ref={headerMenuRef}>
+                <button
+                  onClick={() => setHeaderMenuOpen((prev) => !prev)}
+                  className="flex items-center gap-2.5 rounded-full p-1 transition-colors hover:bg-gray-100 focus:outline-none"
+                  aria-label="Supervisor user menu"
+                  aria-expanded={headerMenuOpen}
+                >
+                  <StudentAvatar name={user.name} url={user.avatarUrl} size={36} />
+                  <div className="hidden leading-tight lg:block text-left pr-1">
+                    <div className="text-sm font-semibold text-[#1A1A1A]">
+                      {user.name}
+                    </div>
                   </div>
-                </div>
+                </button>
+
+                {headerMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-52 rounded-2xl bg-white p-2 shadow-xl border border-gray-100 z-50 animate-in fade-in zoom-in-95 duration-150">
+                    <div className="px-3 py-2 border-b border-gray-100 mb-1">
+                      <p className="text-sm font-bold text-[#1A1A1A] truncate">{user.name}</p>
+                      <p className="text-xs text-[#6B7280]">Supervisor</p>
+                    </div>
+
+                    <Link
+                      href="/supervisor/settings"
+                      onClick={() => setHeaderMenuOpen(false)}
+                      className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                    >
+                      <SettingsIcon className="h-4 w-4 text-gray-500" />
+                      <span>Settings</span>
+                    </Link>
+
+                    <div className="my-1 border-t border-gray-100" />
+
+                    <button
+                      onClick={() => {
+                        setHeaderMenuOpen(false);
+                        setShowLogoutModal(true);
+                      }}
+                      disabled={loggingOut}
+                      className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50"
+                    >
+                      <LogoutIcon className="h-4 w-4 text-red-600" />
+                      <span>{loggingOut ? "Logging out..." : "Logout"}</span>
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </div>
