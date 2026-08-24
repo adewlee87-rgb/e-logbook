@@ -18,7 +18,7 @@ export function DashboardShell({
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="flex min-h-screen w-full max-w-full overflow-x-hidden bg-[#F7F7F8]">
+    <div className="flex h-screen w-full overflow-hidden bg-[#F7F7F8]">
       <Sidebar
         items={navItems}
         open={sidebarOpen}
@@ -33,8 +33,8 @@ export function DashboardShell({
         />
       )}
 
-      <div className="flex min-h-screen min-w-0 flex-1 flex-col">
-        <div className="flex items-center gap-4 border-b border-gray-100 bg-white px-4 py-3 md:hidden">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+        <div className="flex shrink-0 items-center gap-4 border-b border-gray-100 bg-white px-4 py-3 md:hidden">
           <button
             onClick={() => setSidebarOpen(true)}
             aria-label="Open menu"
@@ -42,12 +42,13 @@ export function DashboardShell({
           >
             <MenuIcon className="h-6 w-6" />
           </button>
+
           <span className="text-lg font-bold text-[#1A1A1A]">
             Y&apos;ello Log
           </span>
         </div>
 
-        <main className="min-w-0 flex-1 px-4 py-6 sm:px-6 lg:px-10 lg:py-8">
+        <main className="min-h-0 min-w-0 flex-1 overflow-y-auto px-4 py-6 sm:px-6 lg:px-10 lg:py-8">
           {children}
         </main>
       </div>
