@@ -1,8 +1,18 @@
 const DAY_MS = 24 * 60 * 60 * 1000;
 const WEEK_COLUMNS = 53;
 const MONTH_LABELS = [
-  "Jan", "Feb", "Mar", "April", "May", "June",
-  "July", "August", "Sept", "Oct", "Nov", "Dec",
+  "Jan",
+  "Feb",
+  "Mar",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "Sept",
+  "Oct",
+  "Nov",
+  "Dec",
 ];
 const ROW_LABELS = ["Mon", "", "Wed", "", "Fri", "", ""];
 
@@ -45,8 +55,12 @@ interface TrackerProps {
 export function Tracker({ startDate, endDate, activeDates }: TrackerProps) {
   const today = startOfDay(new Date());
   const rangeStart = startDate ? startOfDay(new Date(startDate)) : today;
-  const rangeEnd = endDate ? startOfDay(new Date(endDate)) : new Date(rangeStart.getTime() + 168 * DAY_MS);
-  const activeSet = new Set(activeDates.map((d) => toKey(startOfDay(new Date(d)))));
+  const rangeEnd = endDate
+    ? startOfDay(new Date(endDate))
+    : new Date(rangeStart.getTime() + 168 * DAY_MS);
+  const activeSet = new Set(
+    activeDates.map((d) => toKey(startOfDay(new Date(d)))),
+  );
 
   const gridStart = mondayOfWeek(rangeStart);
   const columns: DayCell[][] = [];
@@ -114,7 +128,9 @@ export function Tracker({ startDate, endDate, activeDates }: TrackerProps) {
           </div>
           {columns.map((week, colIndex) => (
             <div key={colIndex} className="flex flex-col gap-[3px]">
-              <div className="h-6 text-xs text-[#666]">{monthMarkers[colIndex] ?? ""}</div>
+              <div className="h-6 text-xs text-[#666]">
+                {monthMarkers[colIndex] ?? ""}
+              </div>
               {week.map((cell, rowIndex) => (
                 <div
                   key={rowIndex}
@@ -131,13 +147,13 @@ export function Tracker({ startDate, endDate, activeDates }: TrackerProps) {
         <p className="text-sm text-[#666]">Monitor your active status</p>
         <div className="flex flex-wrap items-center gap-4 text-xs text-[#666]">
           <span className="flex items-center gap-1.5">
-            <span className="h-3 w-3 rounded-sm bg-[#16A34A]" /> Logged
+            <span className="h-3 w-3 rounded-sm bg-[#16A34A]" /> Submitted logs
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="h-3 w-3 rounded-sm bg-primary" /> Pending
+            <span className="h-3 w-3 rounded-sm bg-primary" /> Pending logs
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="h-3 w-3 rounded-sm bg-[#F87171]" /> Missed
+            <span className="h-3 w-3 rounded-sm bg-[#F87171]" /> Missed logs
           </span>
           <span className="flex items-center gap-1.5">
             <span className="h-3 w-3 rounded-sm bg-[#EEEFF1]" /> Upcoming
