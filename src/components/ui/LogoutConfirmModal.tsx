@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { LogoutIcon, CloseIcon } from "@/components/ui/icons";
 
 interface LogoutConfirmModalProps {
@@ -19,6 +20,11 @@ export function LogoutConfirmModal({
   description = "Are you sure you want to log out of your Y'ello Log account? You will need to log back in to access your dashboard.",
 }: LogoutConfirmModalProps) {
   const [loggingOut, setLoggingOut] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (!isOpen) {
@@ -36,7 +42,7 @@ export function LogoutConfirmModal({
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, onClose, loggingOut]);
 
-  if (!isOpen) return null;
+  if (!isOpen || !mounted) return null;
 
   async function handleConfirm() {
     try {
@@ -48,9 +54,9 @@ export function LogoutConfirmModal({
     }
   }
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs transition-opacity animate-in fade-in duration-200"
+      className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs transition-all animate-in fade-in duration-200"
       onClick={() => {
         if (!loggingOut) onClose();
       }}
@@ -64,7 +70,7 @@ export function LogoutConfirmModal({
           onClick={onClose}
           disabled={loggingOut}
           className="absolute right-4 top-4 rounded-full p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600 disabled:opacity-50 transition-colors"
-          aria-label="Close confirmation dialog"
+          aria-label="Close confirmation popup"
         >
           <CloseIcon className="h-5 w-5" />
         </button>
@@ -127,6 +133,7 @@ export function LogoutConfirmModal({
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
