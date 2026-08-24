@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { AvatarUpload } from "@/components/dashboard/AvatarUpload";
 import { Banner } from "@/components/ui/Banner";
+import { mtnNigeriaOffices } from "@/lib/mtn";
 
 interface ProfileFormProps {
   userId: string;
@@ -54,13 +55,38 @@ export function ProfileForm({
   const router = useRouter();
   const [fullName, setFullName] = useState(initialFullName);
   const [username, setUsername] = useState(initialUsername);
-  const [phoneNumber, setPhoneNumber] = useState((initialPhoneNumber ?? "").replace(/\D/g, ""));
+  const [phoneNumber, setPhoneNumber] = useState(
+    (initialPhoneNumber ?? "").replace(/\D/g, ""),
+  );
   const [placeOfWork, setPlaceOfWork] = useState(initialPlaceOfWork);
   const [startDate, setStartDate] = useState(initialStartDate ?? "");
   const [endDate, setEndDate] = useState(initialEndDate ?? "");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+
+  // Build the dropdown options from the MTN offices list. If the value
+  // passed in from the DB doesn't match any known office name (e.g. it
+  // was saved before this list existed, or free-typed previously), keep
+  // it as a selectable option so we don't silently clear the field.
+  const placeOfWorkOptions = useMemo<{ label: string; value: string }[]>(() => {
+    const known = mtnNigeriaOffices.map((office) => ({
+      label: `${office.name} — ${office.city}`,
+      value: office.name,
+    }));
+
+    if (
+      initialPlaceOfWork &&
+      !known.some((opt) => opt.value === initialPlaceOfWork)
+    ) {
+      return [
+        { label: initialPlaceOfWork, value: initialPlaceOfWork },
+        ...known,
+      ];
+    }
+
+    return known;
+  }, [initialPlaceOfWork]);
 
   async function handleSave() {
     setError(null);
@@ -128,7 +154,9 @@ export function ProfileForm({
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-[#1A1A1A]">Edit profile</h1>
-          <p className="mt-1 text-sm text-[#666]">Update your personal information</p>
+          <p className="mt-1 text-sm text-[#666]">
+            Update your personal information
+          </p>
         </div>
         <button
           onClick={handleSave}
@@ -151,7 +179,12 @@ export function ProfileForm({
       )}
 
       <div className="mt-10 flex justify-center">
-        <AvatarUpload userId={userId} name={fullName || "Student"} avatarUrl={avatarUrl} size={128} />
+        <AvatarUpload
+          userId={userId}
+          name={fullName || "Student"}
+          avatarUrl={avatarUrl}
+          size={128}
+        />
       </div>
 
       <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2">
@@ -174,7 +207,9 @@ export function ProfileForm({
           />
         </div>
         <div>
-          <label className="text-sm font-medium text-[#333]">Email Address</label>
+          <label className="text-sm font-medium text-[#333]">
+            Email Address
+          </label>
           <input
             type="email"
             value={email}
@@ -183,7 +218,9 @@ export function ProfileForm({
           />
         </div>
         <div>
-          <label className="text-sm font-medium text-[#333]">Phone Number</label>
+          <label className="text-sm font-medium text-[#333]">
+            Phone Number
+          </label>
           <input
             type="tel"
             inputMode="numeric"
@@ -203,8 +240,10 @@ export function ProfileForm({
               ];
               if (
                 allowedKeys.includes(e.key) ||
-                (e.ctrlKey && ["a", "c", "v", "x", "z"].includes(e.key.toLowerCase())) ||
-                (e.metaKey && ["a", "c", "v", "x", "z"].includes(e.key.toLowerCase()))
+                (e.ctrlKey &&
+                  ["a", "c", "v", "x", "z"].includes(e.key.toLowerCase())) ||
+                (e.metaKey &&
+                  ["a", "c", "v", "x", "z"].includes(e.key.toLowerCase()))
               ) {
                 return;
               }
@@ -218,19 +257,30 @@ export function ProfileForm({
           />
         </div>
         <div className="sm:col-span-2">
-          <label className="text-sm font-medium text-[#333]">Internship Placement</label>
-          <input
-            type="text"
+          <label className="text-sm font-medium text-[#333]">
+            Internship Placement
+          </label>
+          <select
             value={placeOfWork}
             onChange={(e) => setPlaceOfWork(e.target.value)}
             className="mt-2 w-full rounded-lg border border-[#E5E7EB] bg-white px-4 py-3 text-sm text-[#1A1A1A] focus:border-2 focus:border-black focus:outline-none"
-          />
+          >
+            <option value="" disabled>
+              Select internship location
+            </option>
+            {placeOfWorkOptions.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
 
       <div className="mt-6">
         <label className="text-sm font-medium text-[#333]">
-          Internship Duration <span className="text-xs font-normal text-[#666]">(DD/MM/YY)</span>
+          Internship Duration{" "}
+          <span className="text-xs font-normal text-[#666]">(DD/MM/YY)</span>
         </label>
         <div className="mt-2 flex flex-col items-center gap-3 sm:flex-row sm:max-w-md">
           <input
