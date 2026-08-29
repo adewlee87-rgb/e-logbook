@@ -23,7 +23,7 @@ const SLIDES: Slide[] = [
     subtitle: "Real-time Logging on Mobile or Desktop",
     description:
       "Students capture activities, add notes, and attach photo evidence right from their workspace or smartphone.",
-    image: "/auth/onboarding-1.jpg",
+    image: "/auth/yello-log-two.jpeg",
     tag: "Student Log Entry",
   },
   {
@@ -32,7 +32,7 @@ const SLIDES: Slide[] = [
     subtitle: "Verifiable Review Workflow",
     description:
       "Supervisors view entries, leave detailed feedback comments, and stamp logs with one click.",
-    image: "/auth/onboarding-2.jpg",
+    image: "/auth/yello-log-three.jpeg",
     tag: "Supervisor Portal",
   },
   {
@@ -41,7 +41,7 @@ const SLIDES: Slide[] = [
     subtitle: "Visual Progress & Statistics",
     description:
       "Track submission completion, days active, and generate exportable summaries for university assessment.",
-    image: "/auth/onboarding-3.jpg",
+    image: "/auth/yello-log-four.jpeg",
     tag: "Activity Tracker",
   },
   {
@@ -50,7 +50,7 @@ const SLIDES: Slide[] = [
     subtitle: "Seamless Corrections",
     description:
       "When a supervisor returns an entry, students get instant notifications to edit, correct observations, and resubmit.",
-    image: "/auth/onboarding-5.jpg",
+    image: "/auth/yello-log-one.jpeg",
     tag: "Notifications & Updates",
   },
 ];

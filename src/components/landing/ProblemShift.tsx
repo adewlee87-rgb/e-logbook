@@ -160,7 +160,7 @@ export function ProblemShift() {
       <Reveal className="mt-6" y={16}>
         <div className="relative aspect-[16/6] overflow-hidden rounded-2xl border border-[#E5E7EB]">
           <Image
-            src="/auth/onboarding-3.jpg"
+            src="/auth/yello-log-two.jpeg"
             alt="Students collaborating during industrial training"
             fill
             sizes="100vw"
