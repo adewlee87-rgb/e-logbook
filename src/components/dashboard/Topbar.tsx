@@ -8,6 +8,7 @@ import { NotificationsBell } from "@/components/dashboard/NotificationsBell";
 import { StudentAvatar } from "@/components/supervisor/StudentAvatar";
 import { LogoutConfirmModal } from "@/components/ui/LogoutConfirmModal";
 import { createClient } from "@/lib/supabase/client";
+import { SearchSuggestionsPopover } from "@/components/ui/SearchSuggestionsPopover";
 
 interface TopbarProps {
   title: string;
@@ -27,6 +28,11 @@ export function Topbar({ title, userId, user }: TopbarProps) {
   const [loggingOut, setLoggingOut] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
+  const [suggestions, setSuggestions] = useState<
+    { id: string; title: string; subtitle: string; status: string }[]
+  >([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
@@ -37,8 +43,46 @@ export function Topbar({ title, userId, user }: TopbarProps) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // Fetch report suggestions as user types
+  useEffect(() => {
+    if (!query.trim() || !userId) {
+      setSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+
+    let isMounted = true;
+    const supabase = createClient();
+    const q = query.trim().toLowerCase();
+
+    supabase
+      .from("logbook_entries")
+      .select("id, title, date, status, observations, objective")
+      .eq("student_id", userId)
+      .or(`title.ilike.%${q}%,observations.ilike.%${q}%,objective.ilike.%${q}%`)
+      .order("date", { ascending: false })
+      .limit(5)
+      .then(({ data }) => {
+        if (isMounted && data) {
+          const mapped = data.map((e) => ({
+            id: e.id,
+            title: e.title || "Untitled Log",
+            subtitle: `Logged: ${e.date}`,
+            status: e.status,
+          }));
+          setSuggestions(mapped);
+          setShowSuggestions(true);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [query, userId]);
+
   function handleSearch(e: React.FormEvent) {
     e.preventDefault();
+    setShowSuggestions(false);
     const trimmed = query.trim();
     router.push(trimmed ? `/student/report?q=${encodeURIComponent(trimmed)}` : "/student/report");
   }
@@ -65,8 +109,38 @@ export function Topbar({ title, userId, user }: TopbarProps) {
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
+              onFocus={() => {
+                if (query.trim() && suggestions.length > 0) setShowSuggestions(true);
+              }}
               placeholder="Search your reports"
               className="w-full rounded-full border border-[#E5E7EB] bg-white py-2.5 pl-11 pr-4 text-sm text-[#1A1A1A] placeholder-[#9CA3AF] focus:border-2 focus:border-black focus:outline-none"
+            />
+            <SearchSuggestionsPopover
+              isOpen={showSuggestions}
+              onClose={() => setShowSuggestions(false)}
+              query={query}
+              categoryLabel="Matching Reports"
+              suggestions={suggestions.map((s) => ({
+                id: s.id,
+                title: s.title,
+                subtitle: s.subtitle,
+                badge: {
+                  text: s.status,
+                  variant:
+                    s.status === "approved"
+                      ? "success"
+                      : s.status === "rejected"
+                      ? "danger"
+                      : s.status === "submitted"
+                      ? "warning"
+                      : "default",
+                },
+                onClick: () => router.push(`/student/report?entry=${s.id}`),
+              }))}
+              onSelectAll={() => {
+                setShowSuggestions(false);
+                router.push(`/student/report?q=${encodeURIComponent(query.trim())}`);
+              }}
             />
           </div>
         </form>
@@ -78,15 +152,11 @@ export function Topbar({ title, userId, user }: TopbarProps) {
           <div className="relative" ref={menuRef}>
             <button
               onClick={() => setMenuOpen((prev) => !prev)}
-              className="flex shrink-0 items-center gap-3 rounded-full p-1 transition-colors hover:bg-gray-100 focus:outline-none"
+              className="flex shrink-0 items-center justify-center rounded-full p-0.5 transition-all hover:ring-2 hover:ring-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/50"
               aria-label="User menu"
               aria-expanded={menuOpen}
             >
-              <StudentAvatar name={user.name} url={user.avatarUrl} size={44} />
-              <div className="hidden leading-tight text-left md:block pr-1">
-                <div className="text-sm font-semibold text-[#1A1A1A]">{user.name}</div>
-                <div className="text-xs text-[#9CA3AF]">{user.email}</div>
-              </div>
+              <StudentAvatar name={user.name} url={user.avatarUrl} size={40} />
             </button>
 
             {menuOpen && (

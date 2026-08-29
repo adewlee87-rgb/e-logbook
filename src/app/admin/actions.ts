@@ -85,6 +85,23 @@ export async function assignSupervisorAction(formData: {
     return { success: false, error: "Please select both a student and a supervisor." };
   }
 
+  // Check active students currently assigned to supervisor (excluding completed students)
+  const { data: existingMapped } = await supabase
+    .from("supervisors_students")
+    .select("student_id, profiles!supervisors_students_student_id_fkey(siwes_status)")
+    .eq("supervisor_id", supervisorId);
+
+  const activeCount = (existingMapped || []).filter(
+    (row) => row.student_id !== studentId && (row.profiles as unknown as { siwes_status?: string })?.siwes_status !== "completed"
+  ).length;
+
+  if (activeCount >= 5) {
+    return {
+      success: false,
+      error: "Supervisor has reached the maximum limit of 5 active student assignments. A student must complete their internship to relieve the supervisor.",
+    };
+  }
+
   // Delete existing mapping for this student if any
   await supabase
     .from("supervisors_students")

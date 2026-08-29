@@ -96,7 +96,7 @@ export function RecentActivityCard({
             </div>
           ) : (
             currentItems.map((item) => {
-              const displayRel = item.timestamp ? relativeTime(item.timestamp) : item.time;
+              const displayRel = item.timestamp ? relativeTime(item.timestamp) : item.time || "Recently";
               const exactFormatted = item.timestamp ? formatDateTime(item.timestamp) : "";
 
               return (
@@ -111,15 +111,10 @@ export function RecentActivityCard({
                       {item.text}
                     </span>
                     <span
-                      className="text-xs text-[#9CA3AF] mt-0.5"
+                      className="text-xs text-[#9CA3AF] mt-0.5 font-medium"
                       title={exactFormatted || undefined}
                     >
                       {displayRel}
-                      {exactFormatted && (
-                        <span className="ml-1 text-[11px] text-gray-400 font-normal">
-                          ({exactFormatted})
-                        </span>
-                      )}
                     </span>
                   </div>
                 </div>

@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import { AdminSidebar } from "./AdminSidebar";
 import { AdminHeader } from "./AdminHeader";
 import { SearchIcon, FilterIcon, ChevronRightIcon } from "@/components/ui/icons";
+import { SearchSuggestionsPopover } from "@/components/ui/SearchSuggestionsPopover";
 import { assignSupervisorAction, updateStudentDepartmentAction } from "@/app/admin/actions";
 import type { SupervisorRowData, StudentOption } from "@/lib/admin-supervisors-data";
 
@@ -267,6 +268,23 @@ export function AdminAssignmentsView({
                   Clear
                 </button>
               )}
+
+              <SearchSuggestionsPopover
+                isOpen={!!searchQuery.trim()}
+                onClose={() => {}}
+                query={searchQuery}
+                categoryLabel="Assignment Suggestions"
+                suggestions={filteredStudents.slice(0, 5).map((st) => ({
+                  id: st.id,
+                  title: st.name,
+                  subtitle: `${st.email} • ${st.department}`,
+                  badge: {
+                    text: st.currentSupervisorId ? "Assigned" : "Needs Assignment",
+                    variant: st.currentSupervisorId ? "success" : "warning",
+                  },
+                  onClick: () => setSearchQuery(st.name),
+                }))}
+              />
             </div>
 
             {/* Filter Dropdown */}
@@ -389,14 +407,14 @@ export function AdminAssignmentsView({
                           {/* Status Badge */}
                           <td className="px-6 py-4">
                             {isAssigned ? (
-                              <span className="inline-flex items-center gap-1.5 rounded-full bg-[#DCFCE7] px-3 py-1 text-xs font-semibold text-[#15803D]">
+                              <span className="inline-flex items-center gap-1.5 rounded-full bg-[#DCFCE7] px-3 py-1 text-xs font-semibold text-[#15803D] whitespace-nowrap">
                                 <span className="h-1.5 w-1.5 rounded-full bg-[#16A34A]" />
-                                • Assigned
+                                Assigned
                               </span>
                             ) : (
-                              <span className="inline-flex items-center gap-1.5 rounded-full bg-[#FEF3C7] px-3 py-1 text-xs font-semibold text-[#D97706]">
+                              <span className="inline-flex items-center gap-1.5 rounded-full bg-[#FEF3C7] px-3 py-1 text-xs font-semibold text-[#D97706] whitespace-nowrap">
                                 <span className="h-1.5 w-1.5 rounded-full bg-[#F59E0B]" />
-                                • Needs Assignment
+                                Needs Assignment
                               </span>
                             )}
                           </td>
@@ -440,8 +458,8 @@ export function AdminAssignmentsView({
 
       {/* Assign Supervisor Modal */}
       {assignModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
-          <div className="relative w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-3 sm:p-6 overflow-y-auto">
+          <div className="relative w-full max-w-md max-h-[90vh] overflow-y-auto my-auto rounded-3xl bg-white p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200 border border-gray-100">
             {/* Close Button X */}
             <button
               onClick={() => setAssignModalOpen(false)}
@@ -561,8 +579,8 @@ export function AdminAssignmentsView({
 
       {/* Edit Department Modal */}
       {deptModalOpen && selectedStudentForDept && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
-          <div className="relative w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-3 sm:p-6 overflow-y-auto">
+          <div className="relative w-full max-w-md max-h-[90vh] overflow-y-auto my-auto rounded-3xl bg-white p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200 border border-gray-100">
             <button
               onClick={() => {
                 setDeptModalOpen(false);

@@ -20,6 +20,7 @@ import {
   deleteSupervisorAction,
 } from "@/app/admin/actions";
 import type { FilterOption } from "./AdminStudentsView";
+import { SearchSuggestionsPopover } from "@/components/ui/SearchSuggestionsPopover";
 
 interface AdminSupervisorsViewProps {
   adminName?: string;
@@ -306,6 +307,23 @@ export function AdminSupervisorsView({
                     Clear
                   </button>
                 )}
+
+                <SearchSuggestionsPopover
+                  isOpen={!!searchQuery.trim()}
+                  onClose={() => {}}
+                  query={searchQuery}
+                  categoryLabel="Supervisor Suggestions"
+                  suggestions={filteredSupervisors.slice(0, 5).map((sup) => ({
+                    id: sup.id,
+                    title: sup.name,
+                    subtitle: `${sup.email} • ${sup.department}`,
+                    badge: {
+                      text: sup.status,
+                      variant: sup.status === "Active" ? "success" : "danger",
+                    },
+                    onClick: () => setSearchQuery(sup.name),
+                  }))}
+                />
               </div>
 
               {/* Filter Button & Overlay Menu */}
@@ -452,8 +470,17 @@ export function AdminSupervisorsView({
                         </td>
 
                         {/* Assigned Students */}
-                        <td className="px-6 py-4 text-sm font-medium text-[#111827]">
-                          {row.assignedStudentsCount}
+                        <td className="px-6 py-4 text-sm font-medium">
+                          <div className="flex flex-col">
+                            <span className={`font-bold ${row.activeStudentsCount >= 5 ? "text-amber-600" : "text-[#111827]"}`}>
+                              {row.activeStudentsCount}/5 Active
+                            </span>
+                            {row.completedStudentsCount > 0 && (
+                              <span className="text-xs text-emerald-600 font-medium">
+                                +{row.completedStudentsCount} Relieved/Completed
+                              </span>
+                            )}
+                          </div>
                         </td>
 
                         {/* Completed */}
@@ -464,14 +491,14 @@ export function AdminSupervisorsView({
                         {/* Status Badge */}
                         <td className="px-6 py-4">
                           {row.status === "Active" ? (
-                            <span className="inline-flex items-center gap-1.5 rounded-full bg-[#DCFCE7] px-3 py-1 text-xs font-semibold text-[#15803D]">
+                            <span className="inline-flex items-center gap-1.5 rounded-full bg-[#DCFCE7] px-3 py-1 text-xs font-semibold text-[#15803D] whitespace-nowrap">
                               <span className="h-1.5 w-1.5 rounded-full bg-[#16A34A]" />
-                              • Active
+                              Active
                             </span>
                           ) : (
-                            <span className="inline-flex items-center gap-1.5 rounded-full bg-[#FEE2E2] px-3 py-1 text-xs font-semibold text-[#DC2626]">
+                            <span className="inline-flex items-center gap-1.5 rounded-full bg-[#FEE2E2] px-3 py-1 text-xs font-semibold text-[#DC2626] whitespace-nowrap">
                               <span className="h-1.5 w-1.5 rounded-full bg-[#EF4444]" />
-                              • Inactive
+                              Inactive
                             </span>
                           )}
                         </td>
@@ -505,8 +532,8 @@ export function AdminSupervisorsView({
 
       {/* MODAL 1: Add Supervisor (Matching Image 3) */}
       {addModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
-          <div className="relative w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-3 sm:p-6 overflow-y-auto">
+          <div className="relative w-full max-w-md max-h-[90vh] overflow-y-auto my-auto rounded-3xl bg-white p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200 border border-gray-100">
             {/* Close Button X */}
             <button
               onClick={() => setAddModalOpen(false)}
@@ -581,8 +608,8 @@ export function AdminSupervisorsView({
 
       {/* MODAL 2: Assign Supervisor (Matching Image 4 & 5) */}
       {assignModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
-          <div className="relative w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-3 sm:p-6 overflow-y-auto">
+          <div className="relative w-full max-w-md max-h-[90vh] overflow-y-auto my-auto rounded-3xl bg-white p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200 border border-gray-100">
             {/* Close Button X */}
             <button
               onClick={() => setAssignModalOpen(false)}
@@ -654,15 +681,20 @@ export function AdminSupervisorsView({
                     </div>
                   ) : (
                     supervisors.map((sup) => {
+                      const isFull = sup.activeStudentsCount >= 5;
                       const isSelected = selectedSupervisorId === sup.id;
                       return (
                         <div
                           key={sup.id}
-                          onClick={() => setSelectedSupervisorId(sup.id)}
-                          className={`flex items-center justify-between rounded-xl border px-4 py-3 cursor-pointer transition-all ${
-                            isSelected
-                              ? "border-[#EAB308] bg-[#FEF9E6] shadow-xs"
-                              : "border-gray-100 bg-[#F9FAFB] hover:border-gray-200 hover:bg-gray-50"
+                          onClick={() => {
+                            if (!isFull) setSelectedSupervisorId(sup.id);
+                          }}
+                          className={`flex items-center justify-between rounded-xl border px-4 py-3 transition-all ${
+                            isFull
+                              ? "border-red-200 bg-red-50/50 cursor-not-allowed opacity-75"
+                              : isSelected
+                              ? "border-[#EAB308] bg-[#FEF9E6] shadow-xs cursor-pointer"
+                              : "border-gray-100 bg-[#F9FAFB] hover:border-gray-200 hover:bg-gray-50 cursor-pointer"
                           }`}
                         >
                           <div className="flex flex-col">
@@ -674,9 +706,15 @@ export function AdminSupervisorsView({
                             </span>
                           </div>
                           <div className="flex items-center gap-2">
-                            <span className="text-xs text-[#6B7280]">
-                              {sup.assignedStudentsCount} students
-                            </span>
+                            {isFull ? (
+                              <span className="inline-flex items-center rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-bold text-red-700">
+                                FULL (5/5 Active)
+                              </span>
+                            ) : (
+                              <span className="text-xs text-[#6B7280]">
+                                {sup.activeStudentsCount}/5 Active
+                              </span>
+                            )}
                             {isSelected && (
                               <div className="flex h-5 w-5 items-center justify-center rounded-full bg-[#111827] text-white">
                                 <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
@@ -720,8 +758,8 @@ export function AdminSupervisorsView({
 
       {/* Delete Supervisor Confirmation Modal */}
       {deleteModalOpen && supervisorToDelete && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
-          <div className="relative w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-3 sm:p-6 overflow-y-auto">
+          <div className="relative w-full max-w-md max-h-[90vh] overflow-y-auto my-auto rounded-3xl bg-white p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200 border border-gray-100">
             <button
               onClick={() => {
                 setDeleteModalOpen(false);

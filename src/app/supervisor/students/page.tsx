@@ -2,13 +2,11 @@ import { getSupervisorContext } from "@/lib/supervisor-data";
 import { SupervisorShell } from "@/components/supervisor/SupervisorShell";
 import { StudentsGrid, type StudentVM } from "@/components/supervisor/StudentsGrid";
 import { fullName, shortStudentId, relativeTime } from "@/lib/supervisor";
-import { FilterIcon } from "@/components/ui/icons";
 import { ExportPdfButton } from "@/components/ui/ExportPdfButton";
 import type { PDFReportEntry } from "@/lib/pdf-export";
 
 // A full SIWES cycle is roughly 24 weekly logs — used as the progress target.
 const LOG_TARGET = 24;
-const ACTIVE_WINDOW_MS = 60 * 24 * 60 * 60 * 1000;
 
 export default async function MyStudentsPage({
   searchParams,
@@ -23,7 +21,7 @@ export default async function MyStudentsPage({
   const { data: profilesRaw } = studentIds.length
     ? await supabase
         .from("profiles")
-        .select("id, first_name, last_name, passport_photo_url, place_of_work")
+        .select("id, first_name, last_name, passport_photo_url, place_of_work, department, internship_start_date, internship_end_date, siwes_status, siwes_completed_at")
         .in("id", studentIds)
     : { data: [] };
   const profiles = profilesRaw ?? [];
@@ -32,57 +30,93 @@ export default async function MyStudentsPage({
   const { data: entriesRaw } = studentIds.length
     ? await supabase
         .from("logbook_entries")
-        .select("student_id, status, created_at")
+        .select("id, student_id, status, title, body, date, created_at, reviews(id, comment, reviewed_at)")
         .in("student_id", studentIds)
     : { data: [] };
   const entries = entriesRaw ?? [];
 
   // Aggregate per student
-  const agg = new Map<string, { total: number; latest: string | null }>();
+  const agg = new Map<string, { total: number; approved: number; latest: string | null; logs: PDFReportEntry[] }>();
   for (const e of entries) {
     const sid = e.student_id as string;
-    const cur = agg.get(sid) ?? { total: 0, latest: null };
+    const cur = agg.get(sid) ?? { total: 0, approved: 0, latest: null, logs: [] };
     cur.total += 1;
+    if (e.status === "approved") cur.approved += 1;
     const created = e.created_at as string | null;
     if (created && (!cur.latest || created > cur.latest)) cur.latest = created;
+
+    const rawRev = (e.reviews ?? []) as unknown as { comment: string | null; reviewed_at: string }[];
+    const firstRev = rawRev[0] ?? null;
+
+    cur.logs.push({
+      id: e.id,
+      title: e.title || "Logbook Entry",
+      body: e.body || "",
+      date: e.date,
+      createdAt: e.created_at,
+      status: e.status,
+      review: firstRev ? { comment: firstRev.comment, reviewedAt: firstRev.reviewed_at } : null,
+    });
+
     agg.set(sid, cur);
   }
 
-  const now = Date.now();
-  let students: StudentVM[] = profiles.map((p) => {
-    const a = agg.get(p.id) ?? { total: 0, latest: null };
-    const progress = Math.min(100, Math.round((a.total / LOG_TARGET) * 100));
-    const active = !a.latest || now - new Date(a.latest).getTime() <= ACTIVE_WINDOW_MS;
-    return {
+  const todayStr = new Date().toISOString().slice(0, 10);
+
+  const allStudentsVM: StudentVM[] = [];
+
+  for (const p of profiles) {
+    let sStatus = (p.siwes_status as "active" | "completed") || "active";
+    if (sStatus !== "completed" && p.internship_end_date && todayStr >= p.internship_end_date) {
+      const { checkAndAutoOffboardStudent } = await import("@/app/actions/offboarding");
+      const autoDone = await checkAndAutoOffboardStudent(p.id);
+      if (autoDone) sStatus = "completed";
+    }
+
+    const a = agg.get(p.id) ?? { total: 0, approved: 0, latest: null, logs: [] };
+    const progress = sStatus === "completed" ? 100 : Math.min(100, Math.round((a.total / LOG_TARGET) * 100));
+    const isCompleted = sStatus === "completed";
+
+    allStudentsVM.push({
       id: p.id,
       name: fullName(p) || "Student",
       studentId: shortStudentId(p.id),
       avatarUrl: p.passport_photo_url ?? null,
-      active,
+      active: !isCompleted,
+      siwesStatus: sStatus,
+      siwesCompletedAt: p.siwes_completed_at ?? null,
+      startDate: p.internship_start_date ?? null,
+      endDate: p.internship_end_date ?? null,
+      department: p.department ?? "General SIWES",
+      totalLogs: a.total,
+      approvedLogs: a.approved,
       progress,
       lastActive: a.latest ? relativeTime(a.latest) : "No logs yet",
       placeOfWork: p.place_of_work ?? null,
-    };
-  });
+      entries: a.logs,
+    });
+  }
 
   // Optional name/ID search coming from the top bar or Quick Search
   const q = searchParams.q?.trim().toLowerCase();
+  let filtered = allStudentsVM;
   if (q) {
-    students = students.filter(
+    filtered = filtered.filter(
       (s) => s.name.toLowerCase().includes(q) || s.studentId.toLowerCase().includes(q)
     );
   }
-  students.sort((a, b) => a.name.localeCompare(b.name));
+  filtered.sort((a, b) => a.name.localeCompare(b.name));
 
-  const activeCount = students.filter((s) => s.active).length;
+  const activeStudents = filtered.filter((s) => s.siwesStatus !== "completed");
+  const completedStudents = filtered.filter((s) => s.siwesStatus === "completed");
 
-  const pdfEntries: PDFReportEntry[] = students.map((s) => ({
+  const pdfEntries: PDFReportEntry[] = filtered.map((s) => ({
     id: s.id,
     title: `${s.name} (${s.studentId}) — SIWES Student Summary`,
-    body: `Place of Work: ${s.placeOfWork || "N/A"}. Progress Completion: ${s.progress}%. Last Active: ${s.lastActive}`,
+    body: `Place of Work: ${s.placeOfWork || "N/A"}. Progress: ${s.progress}%. Status: ${s.siwesStatus.toUpperCase()}`,
     date: new Date().toISOString(),
     createdAt: new Date().toISOString(),
-    status: s.active ? "approved" : "submitted",
+    status: s.siwesStatus === "completed" ? "approved" : "submitted",
   }));
 
   return (
@@ -98,35 +132,28 @@ export default async function MyStudentsPage({
               </>
             ) : (
               <>
-                You have <span className="font-semibold text-[#1A1A1A]">{activeCount}</span> active student
-                {activeCount === 1 ? "" : "s"} under your supervision.
+                Workload: <span className="font-bold text-[#1A1A1A]">{activeStudents.length}/5 Active</span>
+                {" • "}
+                Relieved/Completed: <span className="font-bold text-emerald-600">{completedStudents.length}</span>
               </>
             )}
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <button className="inline-flex items-center gap-2 rounded-lg border border-[#E5E7EB] bg-white px-4 py-2.5 text-sm font-medium text-[#1A1A1A] hover:bg-gray-50">
-            <FilterIcon className="h-4 w-4" />
-            Filters
-          </button>
           <ExportPdfButton
             entries={pdfEntries}
             title="Supervised Students Roster Report"
-            label="Export PDF"
+            label="Export Roster PDF"
           />
         </div>
       </div>
 
       <div className="mt-6">
-        {q && students.length === 0 ? (
-          <div className="rounded-2xl border border-[#E5E7EB] bg-white px-6 py-16 text-center">
-            <p className="text-sm text-[#666]">
-              No students match &ldquo;{searchParams.q}&rdquo;.
-            </p>
-          </div>
-        ) : (
-          <StudentsGrid students={students} />
-        )}
+        <StudentsGrid
+          activeStudents={activeStudents}
+          completedStudents={completedStudents}
+          searchQuery={q}
+        />
       </div>
     </SupervisorShell>
   );

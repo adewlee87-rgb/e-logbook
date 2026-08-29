@@ -6,13 +6,18 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { AdminSidebar } from "./AdminSidebar";
 import { AdminHeader } from "./AdminHeader";
-import { SearchIcon, FilterIcon, UsersIcon, ChevronRightIcon } from "@/components/ui/icons";
+import { SearchIcon, FilterIcon, UsersIcon, ChevronRightIcon, PrinterIcon } from "@/components/ui/icons";
+import { SearchSuggestionsPopover } from "@/components/ui/SearchSuggestionsPopover";
 import type { StudentRowData } from "@/lib/admin-students-data";
+import { downloadSummaryReportPDF } from "@/lib/pdf-export";
+import { updateStudentDepartmentAction } from "@/app/admin/actions";
 
 interface AdminStudentsViewProps {
   adminName?: string;
   adminEmail?: string;
   totalCount?: number;
+  activeCount?: number;
+  completedCount?: number;
   students?: StudentRowData[];
 }
 
@@ -24,16 +29,17 @@ export type FilterOption =
   | "Least Active"
   | "Inactive";
 
-import { updateStudentDepartmentAction } from "@/app/admin/actions";
-
 export function AdminStudentsView({
   adminName = "Admin User",
   adminEmail = "admin@elogbook.app",
   totalCount = 0,
+  activeCount: propActiveCount,
+  completedCount: propCompletedCount,
   students = [],
 }: AdminStudentsViewProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [activeTab, setActiveTab] = useState<"all" | "active" | "completed">("all");
   const [activeFilter, setActiveFilter] = useState<FilterOption>("All");
   const [filterMenuOpen, setFilterMenuOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -128,8 +134,14 @@ export function AdminStudentsView({
     });
   };
 
-  // Search & Filter Processing
+  const calculatedActiveCount = propActiveCount ?? students.filter((s) => s.siwesStatus !== "completed").length;
+  const calculatedCompletedCount = propCompletedCount ?? students.filter((s) => s.siwesStatus === "completed").length;
+
+  // Search & Tab Filter Processing
   let filteredStudents = students.filter((s) => {
+    if (activeTab === "active" && s.siwesStatus === "completed") return false;
+    if (activeTab === "completed" && s.siwesStatus !== "completed") return false;
+
     const q = searchQuery.toLowerCase().trim();
     if (!q) return true;
     return (
@@ -140,7 +152,7 @@ export function AdminStudentsView({
     );
   });
 
-  // Apply Filter Options
+  // Apply Sort Filter Options
   if (activeFilter === "Inactive") {
     filteredStudents = filteredStudents.filter((s) => s.status === "Inactive");
   } else if (activeFilter === "Oldest") {
@@ -169,6 +181,17 @@ export function AdminStudentsView({
     "Least Active",
     "Inactive",
   ];
+
+  const handleBulkPrintStudent = (st: StudentRowData) => {
+    const logs = st.logEntries || [];
+    const approvedLogs = logs.filter((l) => l.status === "approved");
+    const logsToPrint = approvedLogs.length > 0 ? approvedLogs : logs;
+    downloadSummaryReportPDF(
+      logsToPrint,
+      `Completed SIWES Logbook — ${st.name}`,
+      st.name
+    );
+  };
 
   return (
     <div className="min-h-screen bg-[#F9FAFB]">
@@ -200,13 +223,60 @@ export function AdminStudentsView({
           </div>
 
           {/* Page Header */}
-          <div className="mt-4 mb-6">
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#111827]">
-              All Students
-            </h1>
-            <p className="mt-1 text-sm text-[#6B7280]">
-              There are {totalCount.toLocaleString()} students in the system
-            </p>
+          <div className="mt-4 mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#111827]">
+                Students Record Directory
+              </h1>
+              <p className="mt-1 text-sm text-[#6B7280]">
+                Tracking {totalCount.toLocaleString()} total students ({calculatedActiveCount} active, {calculatedCompletedCount} completed)
+              </p>
+            </div>
+
+            {/* Top Level Category Tabs */}
+            <div className="inline-flex rounded-xl bg-gray-200/70 p-1 self-start sm:self-auto">
+              <button
+                onClick={() => setActiveTab("all")}
+                className={`flex items-center gap-2 rounded-lg px-3.5 py-2 text-xs font-bold transition-all ${
+                  activeTab === "all"
+                    ? "bg-white text-[#111827] shadow-sm"
+                    : "text-[#4B5563] hover:text-[#111827]"
+                }`}
+              >
+                <span>All Students</span>
+                <span className="rounded-full bg-gray-300 px-2 py-0.5 text-[10px] font-extrabold text-gray-800">
+                  {totalCount}
+                </span>
+              </button>
+
+              <button
+                onClick={() => setActiveTab("active")}
+                className={`flex items-center gap-2 rounded-lg px-3.5 py-2 text-xs font-bold transition-all ${
+                  activeTab === "active"
+                    ? "bg-white text-[#111827] shadow-sm"
+                    : "text-[#4B5563] hover:text-[#111827]"
+                }`}
+              >
+                <span>Active</span>
+                <span className="rounded-full bg-[#FFC107] px-2 py-0.5 text-[10px] font-extrabold text-[#111827]">
+                  {calculatedActiveCount}
+                </span>
+              </button>
+
+              <button
+                onClick={() => setActiveTab("completed")}
+                className={`flex items-center gap-2 rounded-lg px-3.5 py-2 text-xs font-bold transition-all ${
+                  activeTab === "completed"
+                    ? "bg-white text-[#111827] shadow-sm"
+                    : "text-[#4B5563] hover:text-[#111827]"
+                }`}
+              >
+                <span>Completed Record</span>
+                <span className="rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-extrabold text-white">
+                  {calculatedCompletedCount}
+                </span>
+              </button>
+            </div>
           </div>
 
           {/* Search Bar & Filter Controls Row */}
@@ -231,6 +301,23 @@ export function AdminStudentsView({
                   Clear
                 </button>
               )}
+
+              <SearchSuggestionsPopover
+                isOpen={!!searchQuery.trim()}
+                onClose={() => {}}
+                query={searchQuery}
+                categoryLabel="Student Suggestions"
+                suggestions={filteredStudents.slice(0, 5).map((s) => ({
+                  id: s.id,
+                  title: s.name,
+                  subtitle: `${s.email} • ${s.department}`,
+                  badge: {
+                    text: s.status,
+                    variant: s.status === "Active" ? "success" : s.status === "Completed" ? "success" : "danger",
+                  },
+                  onClick: () => setSearchQuery(s.name),
+                }))}
+              />
             </div>
 
             {/* Filter Dropdown Toggle & Overlay Menu */}
@@ -247,7 +334,7 @@ export function AdminStudentsView({
                 <FilterIcon className="h-4 w-4" />
               </button>
 
-              {/* Filter Popover Overlay Menu matching Design screenshot */}
+              {/* Filter Popover Overlay Menu */}
               {filterMenuOpen && (
                 <div className="absolute left-0 mt-2 z-50 w-44 rounded-xl bg-[#1E1E1E] p-3 text-white shadow-xl ring-1 ring-black/10">
                   <div className="px-2 py-1 text-xs font-bold uppercase tracking-wider text-[#FACC15]">
@@ -295,17 +382,20 @@ export function AdminStudentsView({
                       Supervisor
                     </th>
                     <th className="px-6 py-3.5 text-xs font-semibold text-[#4B5563]">
-                      Last Activity
+                      {activeTab === "completed" ? "Completed Date" : "Last Activity"}
                     </th>
                     <th className="px-6 py-3.5 text-xs font-semibold text-[#4B5563]">
                       Status
+                    </th>
+                    <th className="px-6 py-3.5 text-xs font-semibold text-[#4B5563] text-right">
+                      Actions / Export
                     </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100 bg-white">
                   {filteredStudents.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="px-6 py-12 text-center">
+                      <td colSpan={6} className="px-6 py-12 text-center">
                         <div className="flex flex-col items-center justify-center">
                           <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 text-gray-400">
                             <UsersIcon className="h-6 w-6" />
@@ -316,6 +406,8 @@ export function AdminStudentsView({
                           <span className="mt-1 text-xs text-[#6B7280]">
                             {searchQuery
                               ? `No results matching "${searchQuery}". Try clearing search.`
+                              : activeTab === "completed"
+                              ? "No completed internship records yet."
                               : "No students registered in the database yet."}
                           </span>
                         </div>
@@ -386,22 +478,63 @@ export function AdminStudentsView({
                           </span>
                         </td>
 
-                        {/* Last Activity */}
+                        {/* Last Activity / Completed Date */}
                         <td className="px-6 py-4 text-sm font-medium text-[#4B5563]">
-                          {row.lastActivity}
+                          {row.siwesStatus === "completed" ? (
+                            <div className="flex flex-col">
+                              <span className="font-bold text-emerald-700">
+                                {row.siwesCompletedAt
+                                  ? new Date(row.siwesCompletedAt).toLocaleDateString("en-US", {
+                                      month: "short",
+                                      day: "numeric",
+                                      year: "numeric",
+                                    })
+                                  : "Completed"}
+                              </span>
+                              {row.endDate && (
+                                <span className="text-[11px] text-gray-400">
+                                  End: {row.endDate}
+                                </span>
+                              )}
+                            </div>
+                          ) : (
+                            row.lastActivity
+                          )}
                         </td>
 
                         {/* Status Badge */}
                         <td className="px-6 py-4">
-                          {row.status === "Active" ? (
-                            <span className="inline-flex items-center gap-1.5 rounded-full bg-[#DCFCE7] px-3 py-1 text-xs font-semibold text-[#15803D]">
+                          {row.siwesStatus === "completed" || row.status === "Completed" ? (
+                            <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-800 whitespace-nowrap border border-emerald-300">
+                              🎓 SIWES Completed
+                            </span>
+                          ) : row.status === "Active" ? (
+                            <span className="inline-flex items-center gap-1.5 rounded-full bg-[#DCFCE7] px-3 py-1 text-xs font-semibold text-[#15803D] whitespace-nowrap">
                               <span className="h-1.5 w-1.5 rounded-full bg-[#16A34A]" />
-                              • Active
+                              Active
                             </span>
                           ) : (
-                            <span className="inline-flex items-center gap-1.5 rounded-full bg-[#FEE2E2] px-3 py-1 text-xs font-semibold text-[#DC2626]">
+                            <span className="inline-flex items-center gap-1.5 rounded-full bg-[#FEE2E2] px-3 py-1 text-xs font-semibold text-[#DC2626] whitespace-nowrap">
                               <span className="h-1.5 w-1.5 rounded-full bg-[#EF4444]" />
-                              • Inactive
+                              Inactive
+                            </span>
+                          )}
+                        </td>
+
+                        {/* Action / Export */}
+                        <td className="px-6 py-4 text-right">
+                          {row.siwesStatus === "completed" ? (
+                            <button
+                              onClick={() => handleBulkPrintStudent(row)}
+                              className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-emerald-700 transition-colors shadow-xs"
+                              title="Export student's approved logbook entries PDF"
+                            >
+                              <PrinterIcon className="h-3.5 w-3.5" />
+                              Bulk Print PDF
+                            </button>
+                          ) : (
+                            <span className="text-xs text-gray-400 font-medium">
+                              {row.approvedCount} Approved Logs
                             </span>
                           )}
                         </td>
@@ -417,8 +550,8 @@ export function AdminStudentsView({
 
       {/* Edit Department Modal */}
       {deptModalOpen && selectedStudentForDept && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
-          <div className="relative w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-3 sm:p-6 overflow-y-auto">
+          <div className="relative w-full max-w-md max-h-[90vh] overflow-y-auto my-auto rounded-3xl bg-white p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200 border border-gray-100">
             <button
               onClick={() => {
                 setDeptModalOpen(false);
