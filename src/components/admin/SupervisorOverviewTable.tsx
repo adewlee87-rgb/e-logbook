@@ -107,7 +107,7 @@ export function SupervisorOverviewTable({
 
                   {/* Status Badge */}
                   <td className="px-6 py-4">
-                    <span className="inline-flex items-center gap-1.5 rounded-full bg-[#DCFCE7] px-3 py-1 text-xs font-semibold text-[#15803D]">
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-[#DCFCE7] px-3 py-1 text-xs font-semibold text-[#15803D] whitespace-nowrap">
                       <span className="h-1.5 w-1.5 rounded-full bg-[#16A34A]" />
                       {row.status}
                     </span>

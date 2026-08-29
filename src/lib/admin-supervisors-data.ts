@@ -10,6 +10,8 @@ export interface SupervisorRowData {
   email: string;
   department: string;
   assignedStudentsCount: number;
+  activeStudentsCount: number;
+  completedStudentsCount: number;
   completedLogsCount: string | number;
   status: "Active" | "Inactive";
   createdAt: string;
@@ -21,6 +23,7 @@ export interface StudentOption {
   email: string;
   department: string;
   currentSupervisorId: string | null;
+  siwesStatus?: "active" | "completed";
 }
 
 export interface AdminSupervisorsData {
@@ -79,21 +82,42 @@ export async function getAdminSupervisorsData(): Promise<AdminSupervisorsData> {
     .from("supervisors_students")
     .select("supervisor_id, student_id");
 
-  const supervisorStudentCounts = new Map<string, number>();
-  const supervisorStudentIdsMap = new Map<string, string[]>();
+  // 4. Fetch all student profiles to check siwes_status
+  const { data: studentProfiles } = await supabase
+    .from("profiles")
+    .select("id, first_name, last_name, email, department, siwes_status")
+    .eq("role", "student")
+    .order("created_at", { ascending: false });
 
-  if (mappings) {
-    for (const m of mappings) {
-      const cnt = supervisorStudentCounts.get(m.supervisor_id) || 0;
-      supervisorStudentCounts.set(m.supervisor_id, cnt + 1);
-
-      const list = supervisorStudentIdsMap.get(m.supervisor_id) || [];
-      list.push(m.student_id);
-      supervisorStudentIdsMap.set(m.supervisor_id, list);
+  const studentStatusMap = new Map<string, string>();
+  if (studentProfiles) {
+    for (const st of studentProfiles) {
+      studentStatusMap.set(st.id, st.siwes_status || "active");
     }
   }
 
-  // 4. Fetch completed logs per supervisor
+  const supervisorStudentIdsMap = new Map<string, string[]>();
+  const supervisorActiveCounts = new Map<string, number>();
+  const supervisorCompletedCounts = new Map<string, number>();
+
+  if (mappings) {
+    for (const m of mappings) {
+      const list = supervisorStudentIdsMap.get(m.supervisor_id) || [];
+      list.push(m.student_id);
+      supervisorStudentIdsMap.set(m.supervisor_id, list);
+
+      const stStatus = studentStatusMap.get(m.student_id);
+      if (stStatus === "completed") {
+        const cCnt = supervisorCompletedCounts.get(m.supervisor_id) || 0;
+        supervisorCompletedCounts.set(m.supervisor_id, cCnt + 1);
+      } else {
+        const aCnt = supervisorActiveCounts.get(m.supervisor_id) || 0;
+        supervisorActiveCounts.set(m.supervisor_id, aCnt + 1);
+      }
+    }
+  }
+
+  // 5. Fetch completed logs per supervisor
   const { data: approvedLogs } = await supabase
     .from("logbook_entries")
     .select("student_id")
@@ -112,12 +136,13 @@ export async function getAdminSupervisorsData(): Promise<AdminSupervisorsData> {
     const sInitials = initials(sName);
     const palette = AVATAR_PALETTES[index % AVATAR_PALETTES.length];
 
-    const assignedCount = supervisorStudentCounts.get(sup.id) || 0;
     const assignedStudentIds = supervisorStudentIdsMap.get(sup.id) || [];
+    const activeCount = supervisorActiveCounts.get(sup.id) || 0;
+    const completedStudentsCount = supervisorCompletedCounts.get(sup.id) || 0;
 
-    let completedCount = 0;
+    let completedLogsCount = 0;
     for (const stId of assignedStudentIds) {
-      completedCount += approvedStudentCounts.get(stId) || 0;
+      completedLogsCount += approvedStudentCounts.get(stId) || 0;
     }
 
     return {
@@ -128,19 +153,14 @@ export async function getAdminSupervisorsData(): Promise<AdminSupervisorsData> {
       name: sName,
       email: sup.email,
       department: sup.department || "Engineering",
-      assignedStudentsCount: assignedCount,
-      completedLogsCount: completedCount > 0 ? completedCount : "-",
+      assignedStudentsCount: assignedStudentIds.length,
+      activeStudentsCount: activeCount,
+      completedStudentsCount,
+      completedLogsCount: completedLogsCount > 0 ? completedLogsCount : "-",
       status: "Active",
       createdAt: sup.created_at,
     };
   });
-
-  // 5. Fetch all students for the "Assign Supervisor" modal select
-  const { data: studentProfiles } = await supabase
-    .from("profiles")
-    .select("id, first_name, last_name, email, department")
-    .eq("role", "student")
-    .order("created_at", { ascending: false });
 
   const mappingStudentToSup = new Map((mappings || []).map((m) => [m.student_id, m.supervisor_id]));
 
@@ -150,6 +170,7 @@ export async function getAdminSupervisorsData(): Promise<AdminSupervisorsData> {
     email: s.email,
     department: s.department || "General SIWES",
     currentSupervisorId: mappingStudentToSup.get(s.id) || null,
+    siwesStatus: (s.siwes_status as "active" | "completed") || "active",
   }));
 
   return {

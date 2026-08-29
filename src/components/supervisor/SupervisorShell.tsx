@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/icons";
 import { StudentAvatar } from "@/components/supervisor/StudentAvatar";
 import { LogoutConfirmModal } from "@/components/ui/LogoutConfirmModal";
+import { SearchSuggestionsPopover } from "@/components/ui/SearchSuggestionsPopover";
 
 const NAV = [
   {
@@ -52,6 +53,10 @@ export function SupervisorShell({
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [headerMenuOpen, setHeaderMenuOpen] = useState(false);
   const [query, setQuery] = useState("");
+  const [studentSuggestions, setStudentSuggestions] = useState<
+    { id: string; name: string; email: string; department: string }[]
+  >([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const headerMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -63,6 +68,57 @@ export function SupervisorShell({
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  // Fetch student suggestions dynamically
+  useEffect(() => {
+    if (!query.trim() || !userId) {
+      setStudentSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+
+    let isMounted = true;
+    const supabase = createClient();
+    const q = query.trim().toLowerCase();
+
+    // Query profiles assigned to this supervisor
+    supabase
+      .from("supervisors_students")
+      .select("student_id, profiles!supervisors_students_student_id_fkey(id, first_name, last_name, email, department)")
+      .eq("supervisor_id", userId)
+      .then(({ data }) => {
+        if (!isMounted || !data) return;
+        const matches: { id: string; name: string; email: string; department: string }[] = [];
+        data.forEach((row) => {
+          const profile = row.profiles as unknown as {
+            id: string;
+            first_name: string | null;
+            last_name: string | null;
+            email: string | null;
+            department: string | null;
+          } | null;
+
+          if (profile) {
+            const name = `${profile.first_name || ""} ${profile.last_name || ""}`.trim() || "Student";
+            const email = profile.email || "";
+            const dept = profile.department || "General SIWES";
+            if (
+              name.toLowerCase().includes(q) ||
+              email.toLowerCase().includes(q) ||
+              dept.toLowerCase().includes(q)
+            ) {
+              matches.push({ id: profile.id, name, email, department: dept });
+            }
+          }
+        });
+        setStudentSuggestions(matches.slice(0, 5));
+        setShowSuggestions(true);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [query, userId]);
 
   const onSettings = pathname.startsWith("/supervisor/settings");
 
@@ -207,8 +263,30 @@ export function SupervisorShell({
                 <input
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
+                  onFocus={() => {
+                    if (query.trim() && studentSuggestions.length > 0) setShowSuggestions(true);
+                  }}
                   placeholder="Search students..."
                   className="w-full rounded-full border border-[#E5E7EB] bg-white py-2 pl-10 pr-4 text-sm text-[#1A1A1A] placeholder-[#9CA3AF] focus:border-2 focus:border-primary focus:outline-none"
+                />
+                <SearchSuggestionsPopover
+                  isOpen={showSuggestions}
+                  onClose={() => setShowSuggestions(false)}
+                  query={query}
+                  categoryLabel="Assigned Students"
+                  suggestions={studentSuggestions.map((st) => ({
+                    id: st.id,
+                    title: st.name,
+                    subtitle: st.email ? `${st.email} • ${st.department}` : st.department,
+                    onClick: () => {
+                      setShowSuggestions(false);
+                      router.push(`/supervisor/students?q=${encodeURIComponent(st.name)}`);
+                    },
+                  }))}
+                  onSelectAll={() => {
+                    setShowSuggestions(false);
+                    router.push(`/supervisor/students?q=${encodeURIComponent(query.trim())}`);
+                  }}
                 />
               </div>
             </form>
@@ -223,16 +301,11 @@ export function SupervisorShell({
               <div className="relative" ref={headerMenuRef}>
                 <button
                   onClick={() => setHeaderMenuOpen((prev) => !prev)}
-                  className="flex items-center gap-2.5 rounded-full p-1 transition-colors hover:bg-gray-100 focus:outline-none"
+                  className="flex shrink-0 items-center justify-center rounded-full p-0.5 transition-all hover:ring-2 hover:ring-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/50"
                   aria-label="Supervisor user menu"
                   aria-expanded={headerMenuOpen}
                 >
                   <StudentAvatar name={user.name} url={user.avatarUrl} size={36} />
-                  <div className="hidden leading-tight lg:block text-left pr-1">
-                    <div className="text-sm font-semibold text-[#1A1A1A]">
-                      {user.name}
-                    </div>
-                  </div>
                 </button>
 
                 {headerMenuOpen && (

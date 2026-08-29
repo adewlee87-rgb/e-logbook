@@ -145,6 +145,27 @@ export function ProfileForm({
       return;
     }
 
+    // Auto-offboard check if end date is set and is today or past
+    if (endDate) {
+      const todayStr = new Date().toISOString().slice(0, 10);
+      if (todayStr >= endDate) {
+        const { checkAndAutoOffboardStudent } = await import("@/app/actions/offboarding");
+        await checkAndAutoOffboardStudent(userId);
+      } else {
+        // If end date is set to a future date, reset status to active
+        await supabase
+          .from("profiles")
+          .update({ siwes_status: "active", siwes_completed_at: null })
+          .eq("id", userId);
+      }
+    } else {
+      // If end date is cleared, reset status to active
+      await supabase
+        .from("profiles")
+        .update({ siwes_status: "active", siwes_completed_at: null })
+        .eq("id", userId);
+    }
+
     setSuccess(true);
     router.refresh();
   }

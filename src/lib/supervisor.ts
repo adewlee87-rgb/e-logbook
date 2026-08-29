@@ -46,7 +46,13 @@ export function parseSafeDate(isoOrDateStr: string | Date | null | undefined): D
     return new Date(Number(y), Number(m) - 1, Number(d), 12, 0, 0);
   }
 
-  const parsed = new Date(str);
+  // Handle SQL / Postgres timestamp string format: "YYYY-MM-DD HH:MM:SS" or "YYYY-MM-DD HH:MM:SS.ms" (space instead of T)
+  let normalizedStr = str;
+  if (str.includes(" ") && !str.includes("T")) {
+    normalizedStr = str.replace(" ", "T");
+  }
+
+  const parsed = new Date(normalizedStr);
   if (isNaN(parsed.getTime())) return null;
   return parsed;
 }
@@ -110,8 +116,8 @@ export function relativeTime(isoOrDateStr: string | Date | null | undefined): st
 
   const diffMs = Date.now() - d.getTime();
 
-  // If timestamp is in the future or within 30 seconds
-  if (diffMs < 30000) return "just now";
+  // If timestamp is in the future or within 45 seconds (handling minor clock skews)
+  if (diffMs < 45000) return "just now";
 
   const mins = Math.floor(diffMs / 60000);
   if (mins < 1) return "just now";

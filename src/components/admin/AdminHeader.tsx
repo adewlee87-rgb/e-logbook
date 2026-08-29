@@ -123,20 +123,12 @@ export function AdminHeader({
           <div className="relative" ref={menuRef}>
             <button
               onClick={() => setMenuOpen((prev) => !prev)}
-              className="flex items-center gap-3 rounded-full p-1 transition-colors hover:bg-gray-100 focus:outline-none"
+              className="flex items-center justify-center rounded-full p-0.5 transition-all hover:ring-2 hover:ring-[#00C49F]/40 focus:outline-none focus:ring-2 focus:ring-[#00C49F]/50"
               aria-label="Admin user menu"
               aria-expanded={menuOpen}
             >
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#00C49F] text-base font-bold text-white shadow-xs">
                 {initial}
-              </div>
-              <div className="hidden flex-col sm:flex text-left pr-1">
-                <span className="text-sm font-bold text-[#111827] leading-tight">
-                  {adminName}
-                </span>
-                <span className="text-xs text-[#6B7280]">
-                  {adminEmail}
-                </span>
               </div>
             </button>
 

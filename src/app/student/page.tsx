@@ -23,6 +23,7 @@ function truncate(text: string | null, length: number) {
 
 import { UserTips } from "@/components/ui/UserTips";
 import { WelcomeHeader } from "@/components/dashboard/WelcomeHeader";
+import { SiwesCompletionBanner } from "@/components/dashboard/SiwesCompletionBanner";
 
 export default async function StudentDashboardPage() {
   const supabase = await createClient();
@@ -35,7 +36,7 @@ export default async function StudentDashboardPage() {
   const { data: profile } = await supabase
     .from("profiles")
     .select(
-      "first_name, last_name, email, passport_photo_url, internship_start_date, internship_end_date"
+      "first_name, last_name, email, passport_photo_url, internship_start_date, internship_end_date, siwes_status, siwes_completed_at"
     )
     .eq("id", user.id)
     .single();
@@ -43,7 +44,7 @@ export default async function StudentDashboardPage() {
   const { data: entries } = await supabase
     .from("logbook_entries")
     .select(
-      `id, date, title, objective, observations, status,
+      `id, date, title, objective, observations, status, created_at,
        reviews(id, comment, reviewed_at, reviewer_role)`
     )
     .eq("student_id", user.id)
@@ -53,6 +54,7 @@ export default async function StudentDashboardPage() {
   const todayKey = new Date().toISOString().slice(0, 10);
   const alreadyLoggedToday = allEntries.some((e) => e.date === todayKey);
   const submittedEntries = allEntries.filter((e) => e.status !== "draft");
+  const approvedEntries = allEntries.filter((e) => e.status === "approved");
 
   const totalSubmissions = submittedEntries.length;
   const activeDates = Array.from(new Set(submittedEntries.map((e) => e.date)));
@@ -60,6 +62,32 @@ export default async function StudentDashboardPage() {
 
   const startDate = profile?.internship_start_date ?? null;
   const endDate = profile?.internship_end_date ?? null;
+  const rawStatus = (profile?.siwes_status as "active" | "completed") || "active";
+  let siwesStatus: "active" | "completed" = "active";
+
+  // STRICT END DATE VALIDATION: Student is ONLY completed if end date is set AND today >= endDate
+  if (endDate && todayKey >= endDate) {
+    if (rawStatus !== "completed") {
+      const { checkAndAutoOffboardStudent } = await import("@/app/actions/offboarding");
+      const autoDone = await checkAndAutoOffboardStudent(user.id);
+      siwesStatus = autoDone ? "completed" : "active";
+    } else {
+      siwesStatus = "completed";
+    }
+  } else {
+    // If end date is in the future or not set, student CANNOT be completed!
+    siwesStatus = "active";
+    if (rawStatus === "completed") {
+      const { createClient } = await import("@/lib/supabase/server");
+      const supabase = await createClient();
+      await supabase
+        .from("profiles")
+        .update({ siwes_status: "active", siwes_completed_at: null })
+        .eq("id", user.id);
+    }
+  }
+
+  const siwesCompletedAt = profile?.siwes_completed_at || null;
 
   let durationWeeks: number | null = null;
   let completionProgress = 0;
@@ -75,8 +103,8 @@ export default async function StudentDashboardPage() {
       totalDays,
       Math.max(0, Math.round((today.getTime() - start.getTime()) / DAY_MS))
     );
-    completionProgress = Math.round((elapsedDays / totalDays) * 100);
-    isActive = today >= start && today <= end;
+    completionProgress = siwesStatus === "completed" ? 100 : Math.round((elapsedDays / totalDays) * 100);
+    isActive = siwesStatus === "completed" ? false : today >= start && today <= end;
   }
 
   const recentActivity: RecentActivityRow[] = allEntries.slice(0, 2).map((e) => {
@@ -118,10 +146,33 @@ export default async function StudentDashboardPage() {
           createdAt={user.created_at}
           userId={user.id}
         />
-        <AddNewLogButton alreadyLoggedToday={alreadyLoggedToday} />
+        {siwesStatus !== "completed" && (
+          <AddNewLogButton alreadyLoggedToday={alreadyLoggedToday} />
+        )}
       </div>
 
       <UserTips className="mt-6" />
+
+      {/* SIWES Completion & Offboarding Banner */}
+      <SiwesCompletionBanner
+        studentName={fullName}
+        siwesStatus={siwesStatus}
+        siwesCompletedAt={siwesCompletedAt}
+        startDate={startDate}
+        endDate={endDate}
+        totalLogs={allEntries.length}
+        approvedLogs={approvedEntries.length}
+        entries={allEntries.map((e) => ({
+          id: e.id,
+          title: e.title,
+          observations: e.observations,
+          objective: e.objective,
+          date: e.date,
+          created_at: e.created_at,
+          status: e.status,
+          reviews: (e.reviews as unknown as { comment: string | null; reviewed_at: string }[]) || null,
+        }))}
+      />
 
       {(!startDate || !endDate) && (
         <div className="mt-6 flex flex-col gap-3 rounded-2xl border-2 border-[#F59E0B] bg-gradient-to-r from-[#FFFBEB] via-[#FEF3D6] to-[#FFFBEB] p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between">

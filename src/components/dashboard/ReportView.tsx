@@ -20,6 +20,7 @@ const STATUS_OPTIONS: { label: string; value: EntryStatus | "all" }[] = [
 import { downloadSingleEntryPDF } from "@/lib/pdf-export";
 import { ProgressSummaryHeader } from "@/components/dashboard/ProgressSummaryHeader";
 import { formatDate, formatDateTime as formatTimestamp } from "@/lib/supervisor";
+import { SearchSuggestionsPopover } from "@/components/ui/SearchSuggestionsPopover";
 
 function downloadEntry(entry: ReportEntry) {
   downloadSingleEntryPDF(entry);
@@ -99,6 +100,31 @@ export function ReportView({ entries }: { entries: ReportEntry[] }) {
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search reports..."
               className="w-full rounded-full border border-[#E5E7EB] bg-white py-2 pl-11 pr-4 text-sm text-[#1A1A1A] placeholder-[#9CA3AF] focus:border-2 focus:border-black focus:outline-none"
+            />
+            <SearchSuggestionsPopover
+              isOpen={!!query.trim() && !selectedId}
+              onClose={() => {}}
+              query={query}
+              categoryLabel="Report Suggestions"
+              suggestions={filtered.slice(0, 5).map((e) => ({
+                id: e.id,
+                title: e.title,
+                subtitle: `Date: ${e.date || "N/A"}`,
+                badge: {
+                  text: e.status,
+                  variant:
+                    e.status === "approved"
+                      ? "success"
+                      : e.status === "rejected"
+                      ? "danger"
+                      : e.status === "submitted"
+                      ? "warning"
+                      : "default",
+                },
+                onClick: () => {
+                  setSelectedId(e.id);
+                },
+              }))}
             />
           </div>
         </div>
