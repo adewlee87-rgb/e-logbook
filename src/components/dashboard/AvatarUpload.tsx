@@ -12,7 +12,13 @@ interface AvatarUploadProps {
   onUploaded?: (url: string) => void;
 }
 
-export function AvatarUpload({ userId, name, avatarUrl, size = 128, onUploaded }: AvatarUploadProps) {
+export function AvatarUpload({
+  userId,
+  name,
+  avatarUrl,
+  size = 128,
+  onUploaded,
+}: AvatarUploadProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState(avatarUrl);
   const [uploading, setUploading] = useState(false);
@@ -77,20 +83,30 @@ export function AvatarUpload({ userId, name, avatarUrl, size = 128, onUploaded }
 
         ctx.save();
         ctx.beginPath();
-        ctx.arc(OUTPUT_SIZE / 2, OUTPUT_SIZE / 2, OUTPUT_SIZE / 2, 0, Math.PI * 2);
+        ctx.arc(
+          OUTPUT_SIZE / 2,
+          OUTPUT_SIZE / 2,
+          OUTPUT_SIZE / 2,
+          0,
+          Math.PI * 2,
+        );
         ctx.clip();
 
         const naturalW = image.naturalWidth || image.width;
         const naturalH = image.naturalHeight || image.height;
 
         // Base cover scale inside 256px viewport
-        const baseScale = Math.max(VIEWPORT_SIZE / naturalW, VIEWPORT_SIZE / naturalH);
+        const baseScale = Math.max(
+          VIEWPORT_SIZE / naturalW,
+          VIEWPORT_SIZE / naturalH,
+        );
         const baseWidth = naturalW * baseScale;
         const baseHeight = naturalH * baseScale;
 
         // Coordinates of image top-left relative to 256px viewport
         const screenX = VIEWPORT_SIZE / 2 + position.x - (baseWidth * zoom) / 2;
-        const screenY = VIEWPORT_SIZE / 2 + position.y - (baseHeight * zoom) / 2;
+        const screenY =
+          VIEWPORT_SIZE / 2 + position.y - (baseHeight * zoom) / 2;
 
         // Scale proportionally to 400px output canvas
         const canvasScale = OUTPUT_SIZE / VIEWPORT_SIZE;
@@ -104,7 +120,7 @@ export function AvatarUpload({ userId, name, avatarUrl, size = 128, onUploaded }
       }
 
       const blob = await new Promise<Blob | null>((resolve) =>
-        canvas.toBlob(resolve, "image/jpeg", 0.92)
+        canvas.toBlob(resolve, "image/jpeg", 0.92),
       );
 
       if (!blob) throw new Error("Failed to generate cropped image");
@@ -122,7 +138,10 @@ export function AvatarUpload({ userId, name, avatarUrl, size = 128, onUploaded }
         data: { publicUrl },
       } = supabase.storage.from("avatars").getPublicUrl(path);
 
-      await supabase.from("profiles").update({ passport_photo_url: publicUrl }).eq("id", userId);
+      await supabase
+        .from("profiles")
+        .update({ passport_photo_url: publicUrl })
+        .eq("id", userId);
       setPreview(publicUrl);
       onUploaded?.(publicUrl);
       handleCancelModal();
@@ -173,15 +192,22 @@ export function AvatarUpload({ userId, name, avatarUrl, size = 128, onUploaded }
 
   const handleWheel = (e: React.WheelEvent) => {
     e.preventDefault();
-    setZoom((prev) => Math.min(3, Math.max(1, prev - e.deltaY * 0.003)));
+    setZoom((prev) => Math.min(3, Math.max(0.5, prev - e.deltaY * 0.003)));
   };
 
   return (
     <>
-      <div className="relative inline-block" style={{ width: size, height: size }}>
+      <div
+        className="relative inline-block"
+        style={{ width: size, height: size }}
+      >
         {preview ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={preview} alt={name} className="h-full w-full rounded-full object-cover shadow-sm" />
+          <img
+            src={preview}
+            alt={name}
+            className="h-full w-full rounded-full object-cover shadow-sm"
+          />
         ) : (
           <div className="flex h-full w-full items-center justify-center rounded-full bg-[#FEF3D6] text-2xl font-semibold text-[#1A1A1A]">
             {initials}
@@ -213,14 +239,20 @@ export function AvatarUpload({ userId, name, avatarUrl, size = 128, onUploaded }
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
           <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
             <div className="flex items-center justify-between border-b pb-3">
-              <h3 className="text-lg font-bold text-[#1A1A1A]">Adjust Profile Picture</h3>
-              <button onClick={handleCancelModal} className="text-gray-400 hover:text-black">
+              <h3 className="text-lg font-bold text-[#1A1A1A]">
+                Adjust Profile Picture
+              </h3>
+              <button
+                onClick={handleCancelModal}
+                className="text-gray-400 hover:text-black"
+              >
                 <CloseIcon className="h-5 w-5" />
               </button>
             </div>
 
             <p className="mt-2 text-xs text-[#666]">
-              Drag image to center and use slider or scroll wheel to adjust framing.
+              Drag image to center and use slider or scroll wheel to adjust
+              framing.
             </p>
 
             {/* Circular framing viewport (256px x 256px) */}
@@ -259,7 +291,7 @@ export function AvatarUpload({ userId, name, avatarUrl, size = 128, onUploaded }
               </label>
               <input
                 type="range"
-                min="1"
+                min="0.5"
                 max="3"
                 step="0.05"
                 value={zoom}

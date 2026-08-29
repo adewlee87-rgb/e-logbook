@@ -81,7 +81,8 @@ export function Hero() {
             >
               Y&apos;ello Log digitizes the Universal E-Logbook for Nigerian
               universities. Students record daily training activities with photo
-              evidence, and supervisors review and stamp them — all in one place.
+              evidence, and supervisors review and stamp them — all in one
+              place.
             </motion.p>
 
             <motion.div
@@ -126,7 +127,7 @@ export function Hero() {
             />
             <div className="relative aspect-[4/3] overflow-hidden rounded-2xl border border-[#E5E7EB] shadow-xl">
               <Image
-                src="/auth/onboarding-1.jpg"
+                src="/auth/yello-log-one.jpeg"
                 alt="A student documenting their industrial training work"
                 fill
                 priority
